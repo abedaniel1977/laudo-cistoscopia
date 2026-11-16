@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Laudo de Cistoscopia</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#1F5E8C">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one form column (max 880px) under a sticky bar, section jump chips, fixed action bar at the bottom on phones */
+:root{
+  --bg:#F3F6F8; --surface:#FFFFFF; --ink:#15202B; --muted:#5A6774; --line:#D9E0E6;
+  --accent:#1F5E8C; --accent-ink:#FFFFFF; --accent-soft:#E2EDF5; --alert:#A6461F; --alert-soft:#F8E9E1; --danger:#B3261E;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E141A; --surface:#151D25; --ink:#E5EBF0; --muted:#94A2AF; --line:#283440;
+  --accent:#73B3E2; --accent-ink:#0A1621; --accent-soft:#1A3044; --alert:#E69A72; --alert-soft:#3A2419; --danger:#F08A80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141A; --surface:#151D25; --ink:#E5EBF0; --muted:#94A2AF; --line:#283440;
+  --accent:#73B3E2; --accent-ink:#0A1621; --accent-soft:#1A3044; --alert:#E69A72; --alert-soft:#3A2419; --danger:#F08A80; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:12px;padding-block:10px}
+.brand{display:flex;flex-direction:column;min-width:0;flex:1}
+.brand b{font-size:16px;letter-spacing:.01em}
+.brand span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.status{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:500;font-size:14px;min-height:38px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn.danger{color:var(--danger)}
+.btn:focus-visible,.chip:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn svg{width:18px;height:18px;flex:none}
+
+.jump{display:flex;gap:6px;overflow-x:auto;padding-block:8px 10px;scrollbar-width:none}
+.jump::-webkit-scrollbar{display:none}
+.jump a{flex:none;font-size:12.5px;color:var(--muted);text-decoration:none;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:var(--surface)}
+.jump a:hover{color:var(--accent);border-color:var(--accent)}
+
+main{padding-block:16px 120px;display:flex;flex-direction:column;gap:14px}
+.quick{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.quick .hint{font-size:13px;color:var(--muted);flex-basis:100%}
+
+section.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;scroll-margin-top:130px}
+.card h2{margin:0 0 12px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);display:flex;align-items:center;gap:10px}
+.card h2 .n{font-family:var(--font-mono);font-weight:500;color:var(--muted);letter-spacing:0}
+.card h2 .sp{flex:1}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f.w2{grid-column:1/-1}
+.f>label,.f>.lbl{font-size:12.5px;font-weight:500;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px;min-height:40px}
+textarea{min-height:76px;resize:vertical}
+.suf{display:flex;align-items:center;gap:6px}
+.suf span{font-family:var(--font-mono);font-size:12.5px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:6px 11px;font-size:13.5px;cursor:pointer;user-select:none}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink);font-weight:500}
+.chip.abn[aria-pressed="true"]{background:var(--alert-soft);border-color:var(--alert)}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.seg .chip{border:0;border-radius:0;flex:1;text-align:center;border-right:1px solid var(--line);padding:9px 8px}
+.seg .chip:last-child{border-right:0}
+.seg .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+/* lesions */
+.lesions{display:flex;flex-direction:column;gap:10px}
+.lesion{border:1px solid var(--line);border-radius:8px;padding:12px;background:var(--bg)}
+.lesion .head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-weight:600;font-size:13.5px}
+.lesion .head .sp{flex:1}
+.lesion input,.lesion select,.lesion textarea{background:var(--surface)}
+.empty{font-size:13.5px;color:var(--muted)}
+
+/* bladder map */
+.map{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:16px;align-items:start;margin-bottom:12px}
+.map svg{width:100%;height:auto}
+.map .zone{fill:var(--bg);stroke:var(--line);stroke-width:1.5;cursor:pointer}
+.map .zone:hover{fill:var(--accent-soft)}
+.map .zone.on{fill:var(--alert-soft);stroke:var(--alert)}
+.map text{fill:var(--muted);font-size:9px;font-family:var(--font-mono);pointer-events:none}
+.map .cap{font-size:12.5px;color:var(--muted)}
+
+/* photos */
+.drop{border:1.5px dashed var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:0;font-size:13.5px;color:var(--muted)}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;width:100%}
+.ph{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
+.ph img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover;cursor:zoom-in}
+.ph .x{position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:99px;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;font-size:16px;line-height:1}
+.ph .cap{font-family:var(--font-mono);font-size:11px;color:var(--muted);padding:5px 8px}
+.vis-hide{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* bottom action bar */
+.actions{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.actions .wrap{display:flex;gap:8px;padding-block:10px;justify-content:flex-end;flex-wrap:wrap}
+.actions .grow{flex:1}
+
+/* drawer + modal */
+.scrim{position:fixed;inset:0;background:rgba(10,18,26,.45);z-index:20;display:flex;justify-content:flex-end}
+.drawer{width:min(420px,100%);height:100%;background:var(--surface);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 14px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 14px) 16px;gap:12px}
+.drawer h3{margin:0;font-size:16px;display:flex;align-items:center;gap:8px}
+.drawer h3 .sp{flex:1}
+.drawer input[type=search]{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 10px}
+.list{overflow:auto;display:flex;flex-direction:column;gap:6px;flex:1;min-height:0}
+.item{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px;cursor:pointer;text-align:left;background:var(--bg);width:100%}
+.item.cur{border-color:var(--accent)}
+.item .t{flex:1;min-width:0}
+.item .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.item .t span{font-size:12px;color:var(--muted);font-family:var(--font-mono)}
+.drawer .foot{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.modal-scrim{position:fixed;inset:0;background:rgba(10,18,26,.55);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);border-radius:12px;padding:18px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:14px}
+.modal p{margin:0}
+.modal .row{display:flex;gap:8px;justify-content:flex-end}
+.lightbox{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:16px}
+.lightbox img{max-width:100%;max-height:100%;object-fit:contain}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;font-size:13.5px;z-index:50;max-width:calc(100% - 32px)}
+.note{font-size:12.5px;color:var(--muted)}
+
+#printArea{display:none}
+@media print{
+  body{background:#fff;color:#000}
+  .bar,.actions,main,.scrim,.toast,body::before{display:none!important}
+  #printArea{display:block;font-size:11.5pt;padding:0 6mm}
+  #printArea h1{font-size:16pt;margin:0 0 4pt}
+  #printArea h4{font-size:10pt;text-transform:uppercase;letter-spacing:.06em;margin:12pt 0 3pt;border-bottom:1px solid #999}
+  #printArea p{margin:1.5pt 0}
+  #printArea img{max-width:100%;page-break-before:always;display:block}
+}
+@media (max-width:640px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .map{grid-template-columns:minmax(0,1fr)}
+  .map svg{max-width:240px}
+  .bar .hide-s{display:none}
+  .actions .btn .lbl-l{display:none}
+}
+@media (prefers-reduced-motion:no-preference){.chip,.btn,.zone{transition:background-color .12s,border-color .12s}}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="brand"><b>Laudo de Cistoscopia</b><span id="hdrPatient">Novo laudo</span></div>
+    <span class="status hide-s" id="saveState">salvo neste aparelho</span>
+    <button class="btn" id="btnNew" type="button" title="Novo laudo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span class="hide-s">Novo</span></button>
+    <button class="btn" id="btnList" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Laudos</button>
+  </div>
+  <div class="wrap"><nav class="jump" id="jump" aria-label="Seções"></nav></div>
+</header>
+
+<main class="wrap" id="form">
+  <div class="quick">
+    <button class="btn" type="button" id="btnNormal">Preencher como exame normal</button>
+    <button class="btn ghost" type="button" id="btnPhotoTop">Anexar foto da ficha manual</button>
+    <span class="hint">Os laudos ficam salvos apenas neste aparelho. Use "Backup" na lista de laudos para levar a outro aparelho.</span>
+  </div>
+  <div id="sections"></div>
+</main>
+
+<div class="actions"><div class="wrap">
+  <span class="grow"></span>
+  <button class="btn" type="button" id="btnCopy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h9"/></svg>Copiar <span class="lbl-l">texto</span></button>
+  <button class="btn" type="button" id="btnPrint" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>Imprimir</button>
+  <button class="btn primary" type="button" id="btnPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>Gerar PDF</button>
+</div></div>
+
+<input type="file" id="inCam" accept="image/*" capture="environment" class="vis-hide" tabindex="-1">
+<input type="file" id="inGal" accept="image/*" multiple class="vis-hide" tabindex="-1">
+<input type="file" id="inBackup" accept="application/json,.json" class="vis-hide" tabindex="-1">
+
+<div class="scrim" id="drawer" hidden>
+  <div class="drawer" role="dialog" aria-label="Laudos salvos">
+    <h3>Laudos salvos <span class="sp"></span><button class="btn ghost" type="button" id="btnCloseList">Fechar</button></h3>
+    <input type="search" id="q" placeholder="Buscar por nome ou prontuário">
+    <div class="list" id="list"></div>
+    <div class="foot">
+      <button class="btn" type="button" id="btnExport">Backup (exportar)</button>
+      <button class="btn" type="button" id="btnImport">Restaurar backup</button>
+    </div>
+  </div>
+</div>
+<div class="modal-scrim" id="confirm" hidden><div class="modal" role="alertdialog"><p id="confirmMsg"></p><div class="row"><button class="btn" type="button" id="cNo">Cancelar</button><button class="btn primary" type="button" id="cYes">Confirmar</button></div></div></div>
+<div class="lightbox" id="lightbox" hidden><img id="lbImg" alt="Foto da ficha"></div>
+<div class="toast" id="toast" hidden></div>
+<div id="printArea"></div>
+
+<script src="jspdf.umd.min.js"></script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const[n,v]of Object.entries(a)){if(n==="class")e.className=v;else if(n.startsWith("on"))e.addEventListener(n.slice(2),v);else if(v!==undefined&&v!==null&&v!==false)e.setAttribute(n,v===true?"":v)}for(const c of k.flat()){if(c==null)continue;e.append(c.nodeType?c:document.createTextNode(c))}return e};
+const IN_ARTIFACT=!!(window.claude&&typeof window.claude.use==="function");
+
+/* ---------- schema ---------- */
+const S=(id,label,type,o={})=>Object.assign({id,label,type},o);
+const SECTIONS=[
+ {id:"ident",title:"Identificação",fields:[
+  S("nome","Nome do paciente","text",{w2:1}),
+  S("nasc","Data de nascimento","date"),
+  S("idade","Idade","number",{suf:"anos"}),
+  S("sexo","Sexo","seg",{options:["Masculino","Feminino"]}),
+  S("prontuario","Prontuário / registro","text"),
+  S("convenio","Convênio","text"),
+  S("data","Data do exame","date"),
+  S("local","Local / serviço","text"),
+  S("solicitante","Médico solicitante","text")]},
+ {id:"indic",title:"Indicação",fields:[
+  S("indicacao","Indicação","chips",{w2:1,options:["Hematúria macroscópica","Hematúria microscópica","Seguimento de tumor vesical","Sintomas do trato urinário inferior","ITU de repetição","Suspeita de estenose de uretra","Retirada de cateter duplo J","Dor pélvica / suspeita de cistite intersticial","Avaliação pré-operatória","Suspeita de fístula","Citologia oncótica alterada"]}),
+  S("indicacao_obs","Detalhes da indicação","textarea",{w2:1})]},
+ {id:"proc",title:"Procedimento",fields:[
+  S("aparelho","Aparelho","seg",{options:["Flexível","Rígido"]}),
+  S("calibre","Calibre","number",{suf:"Fr"}),
+  S("otica","Ótica","select",{options:["0°","12°","30°","70°"]}),
+  S("anestesia","Anestesia","select",{options:["Local (gel de lidocaína 2%)","Sedação","Raquianestesia","Anestesia geral"]}),
+  S("urocultura","Urocultura prévia","select",{options:["Negativa","Positiva, tratada","Não realizada"]}),
+  S("atb","Antibioticoprofilaxia","text")]},
+ {id:"uretra",title:"Uretra",fields:[
+  S("meato","Meato uretral externo","select",{options:["Normal","Estenose de meato","Hipospadia","Lesão"],normal:"Normal"}),
+  S("ur_ant","Uretra anterior","select",{options:["Normal","Estenose","Lesão","Falso trajeto","Divertículo"],normal:"Normal"}),
+  S("est_local","Localização da estenose","select",{options:["Meatal","Fossa navicular","Peniana","Bulbar","Membranosa"],show:d=>d.ur_ant==="Estenose"}),
+  S("est_ext","Extensão da estenose","number",{suf:"cm",show:d=>d.ur_ant==="Estenose"}),
+  S("est_transp","Estenose transposta pelo aparelho","seg",{options:["Sim","Não"],show:d=>d.ur_ant==="Estenose"}),
+  S("ur_post","Uretra posterior","select",{options:["Normal","Estenose","Lesão"],normal:"Normal"}),
+  S("esfincter","Esfíncter externo","select",{options:["Normal, coaptação preservada","Coaptação incompleta","Não avaliado"],normal:"Normal, coaptação preservada"}),
+  S("uretra_obs","Observações","textarea",{w2:1})]},
+ {id:"prostata",title:"Próstata e colo vesical",fields:[
+  S("lobos_lat","Lobos laterais","select",{male:1,options:["Sem obstrução","Obstrução leve","Obstrução moderada","Obstrução acentuada (lobos em contato)"],normal:"Sem obstrução"}),
+  S("lobo_med","Lobo mediano","select",{male:1,options:["Ausente","Presente, pequeno","Presente, volumoso (intravesical)"],normal:"Ausente"}),
+  S("comp_prost","Comprimento da uretra prostática","number",{male:1,suf:"cm"}),
+  S("verum","Verumontano","select",{male:1,options:["Normal","Não identificado","Alterado"],normal:"Normal"}),
+  S("loja","Loja prostática (pós-operatório)","select",{male:1,options:["Não se aplica","Ampla, epitelizada","Com tecido residual","Estenose de anastomose"],normal:"Não se aplica"}),
+  S("colo","Colo vesical","select",{options:["Normal","Elevado","Esclerose / contratura","Hipertrofia do colo"],normal:"Normal"}),
+  S("prost_obs","Observações","textarea",{w2:1})]},
+ {id:"bexiga",title:"Bexiga",fields:[
+  S("urina","Aspecto da urina","select",{options:["Clara","Turva","Hematúrica","Com coágulos"],normal:"Clara"}),
+  S("capacidade","Capacidade vesical","number",{suf:"mL"}),
+  S("mucosa","Mucosa","chips",{w2:1,options:["Normal","Hiperemia difusa","Hiperemia focal","Edema bolhoso","Cistite cística / glandular","Leucoplasia","Áreas aveludadas","Hipervascularização","Telangiectasias","Glomerulações"],normal:["Normal"]}),
+  S("trab","Trabeculação","seg",{w2:1,options:["Ausente","Leve","Moderada","Acentuada"],normal:"Ausente"}),
+  S("celas","Celas / divertículos","select",{options:["Ausentes","Celas","Divertículo único","Divertículos múltiplos"],normal:"Ausentes"}),
+  S("div_local","Localização dos divertículos","text",{show:d=>/Divert/.test(d.celas||"")}),
+  S("litiase","Litíase vesical","select",{options:["Ausente","Presente"],normal:"Ausente"}),
+  S("litiase_desc","Cálculos (número e tamanho)","text",{show:d=>d.litiase==="Presente"}),
+  S("corpo","Cateter / corpo estranho","select",{options:["Nenhum","Cateter duplo J à direita","Cateter duplo J à esquerda","Cateter duplo J bilateral","Outro corpo estranho"],normal:"Nenhum"}),
+  S("bexiga_obs","Observações","textarea",{w2:1})]},
+ {id:"lesoes",title:"Lesões vesicais",custom:"lesions"},
+ {id:"meatos",title:"Meatos ureterais",fields:[
+  S("md_pos","Direito · posição","select",{options:["Tópico","Ectópico","Não identificado"],normal:"Tópico"}),
+  S("me_pos","Esquerdo · posição","select",{options:["Tópico","Ectópico","Não identificado"],normal:"Tópico"}),
+  S("md_forma","Direito · aspecto","select",{options:["Normal","Em buraco de golfe","Ureterocele","Edemaciado"],normal:"Normal"}),
+  S("me_forma","Esquerdo · aspecto","select",{options:["Normal","Em buraco de golfe","Ureterocele","Edemaciado"],normal:"Normal"}),
+  S("md_efl","Direito · ejaculação","select",{options:["Urina clara","Urina hematúrica","Não observada"],normal:"Urina clara"}),
+  S("me_efl","Esquerdo · ejaculação","select",{options:["Urina clara","Urina hematúrica","Não observada"],normal:"Urina clara"})]},
+ {id:"conclusao",title:"Conclusão e conduta",fields:[
+  S("intercorr","Intercorrências","select",{options:["Sem intercorrências","Sangramento leve","Falso trajeto","Exame incompleto","Reação vasovagal"],normal:"Sem intercorrências"}),
+  S("conclusao","Conclusão","textarea",{w2:1,auto:1}),
+  S("conduta","Conduta","chips",{w2:1,options:["Alta urológica","Nova cistoscopia em 3 meses","Nova cistoscopia em 6 meses","Nova cistoscopia em 12 meses","Biópsia vesical","RTU de bexiga","Citologia urinária","Uro-TC","Uretrotomia / uretroplastia","Retirada de duplo J realizada","Estudo urodinâmico","Tratamento clínico"]}),
+  S("conduta_obs","Detalhes da conduta","textarea",{w2:1}),
+  S("medico","Médico executor","text"),
+  S("crm","CRM","text")]},
+ {id:"ficha",title:"Ficha manual",custom:"photos"}
+];
+const ALLF=SECTIONS.flatMap(s=>s.fields||[]);
+const FMAP=Object.fromEntries(ALLF.map(f=>[f.id,f]));
+const LES_LOCAL=["Trígono","Colo vesical","Parede lateral direita","Parede lateral esquerda","Parede posterior","Cúpula","Parede anterior","Junto ao meato direito","Junto ao meato esquerdo","Dentro de divertículo"];
+const LES_ASP=["Papilífera","Séssil / sólida","Plana, eritematosa (suspeita de CIS)","Ulcerada","Cicatriz de RTU prévia"];
+const LES_BASE=["Pediculada","Base larga","Não avaliada"];
+const PREF_KEYS=["local","medico","crm","aparelho","calibre","otica","anestesia"];
+
+/* ---------- storage (IndexedDB, fallback memory) ---------- */
+let idb=null; const mem=new Map();
+function openDB(){return new Promise(res=>{try{const r=indexedDB.open("laudo-cistoscopia",1);r.onupgradeneeded=()=>r.result.createObjectStore("laudos",{keyPath:"id"});r.onsuccess=()=>{idb=r.result;res()};r.onerror=()=>res()}catch(e){res()}})}
+function tx(mode){return idb.transaction("laudos",mode).objectStore("laudos")}
+const store={
+ all(){if(!idb)return Promise.resolve([...mem.values()]);return new Promise(res=>{const r=tx("readonly").getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>res([...mem.values()])})},
+ put(o){mem.set(o.id,o);if(!idb)return Promise.resolve(false);return new Promise(res=>{try{const r=tx("readwrite").put(o);r.onsuccess=()=>res(true);r.onerror=()=>res(false)}catch(e){res(false)}})},
+ del(id){mem.delete(id);if(!idb)return Promise.resolve();return new Promise(res=>{try{const r=tx("readwrite").delete(id);r.onsuccess=r.onerror=()=>res()}catch(e){res()}})}
+};
+const prefs={get(){try{return JSON.parse(localStorage.getItem("lc-prefs")||"{}")}catch(e){return{}}},set(p){try{localStorage.setItem("lc-prefs",JSON.stringify(p))}catch(e){}},
+ last(){try{return localStorage.getItem("lc-last")}catch(e){return null}},setLast(id){try{localStorage.setItem("lc-last",id)}catch(e){}}};
+
+/* ---------- state ---------- */
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function blank(){const p=prefs.get();const d={data:today()};PREF_KEYS.forEach(k=>{if(p[k])d[k]=p[k]});if(!d.anestesia)d.anestesia="Local (gel de lidocaína 2%)";if(!d.aparelho)d.aparelho="Flexível";return{id:uid(),created:Date.now(),updated:Date.now(),d,lesions:[],noLesions:false,photos:[]}}
+let R=blank();
+
+/* ---------- render form ---------- */
+const sectionsEl=$("#sections");
+function fieldControl(f){
+ const v=R.d[f.id];
+ if(f.type==="seg"||f.type==="chips"){
+  const multi=f.type==="chips";
+  const box=el("div",{class:multi?"chips":"seg",role:"group","aria-label":f.label});
+  f.options.forEach(o=>{
+   const on=multi?(Array.isArray(v)&&v.includes(o)):v===o;
+   const abn=f.normal&&multi&&!f.normal.includes(o);
+   box.append(el("button",{type:"button",class:"chip"+(abn?" abn":""),"aria-pressed":on?"true":"false",onclick:()=>{
+     if(multi){let a=Array.isArray(R.d[f.id])?[...R.d[f.id]]:[];
+       if(a.includes(o))a=a.filter(x=>x!==o);else{a.push(o);if(f.normal&&f.normal.includes(o))a=[o];else if(f.normal)a=a.filter(x=>!f.normal.includes(x))}
+       R.d[f.id]=a}
+     else R.d[f.id]=R.d[f.id]===o?"":o;
+     changed(true)}},o))});
+  return box}
+ if(f.type==="select"){const s=el("select",{id:"f_"+f.id});s.append(el("option",{value:""},"—"));f.options.forEach(o=>s.append(el("option",{value:o},o)));s.value=v||"";s.addEventListener("change",()=>{R.d[f.id]=s.value;changed(true)});return s}
+ if(f.type==="textarea"){const t=el("textarea",{id:"f_"+f.id,rows:3});t.value=v||"";t.addEventListener("input",()=>{R.d[f.id]=t.value;changed()});return t}
+ const i=el("input",{id:"f_"+f.id,type:f.type==="number"?"number":f.type,inputmode:f.type==="number"?"decimal":null,step:f.type==="number"?"any":null});
+ i.value=v||"";
+ i.addEventListener("input",()=>{R.d[f.id]=i.value;if(f.id==="nasc"){const a=age(i.value);if(a!=null){R.d.idade=String(a);const ie=$("#f_idade");if(ie)ie.value=a}}if(f.id==="nome")hdr();changed()});
+ if(f.suf)return el("div",{class:"suf"},i,el("span",{},f.suf));
+ return i}
+function age(s){if(!s)return null;const b=new Date(s+"T00:00"),n=new Date();if(isNaN(b))return null;let a=n.getFullYear()-b.getFullYear();const m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;return a>=0&&a<130?a:null}
+
+function render(){
+ sectionsEl.replaceChildren();
+ const jump=$("#jump");jump.replaceChildren();
+ const male=R.d.sexo!=="Feminino";
+ let n=0;
+ SECTIONS.forEach(sec=>{
+  if(sec.id==="prostata"&&!male){/* only colo vesical for women */}
+  n++;
+  const title=sec.id==="prostata"&&!male?"Colo vesical":sec.title;
+  jump.append(el("a",{href:"#s_"+sec.id,onclick:e=>{e.preventDefault();document.getElementById("s_"+sec.id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}},title));
+  const h=el("h2",{},el("span",{class:"n"},String(n).padStart(2,"0")),title,el("span",{class:"sp"}));
+  const card=el("section",{class:"card",id:"s_"+sec.id},h);
+  if(sec.custom==="lesions")card.append(renderLesions());
+  else if(sec.custom==="photos")card.append(renderPhotos());
+  else{
+   const g=el("div",{class:"grid"});
+   sec.fields.forEach(f=>{
+    if(f.male&&!male)return;
+    if(f.show&&!f.show(R.d))return;
+    const ctl=fieldControl(f);
+    const isGroup=f.type==="seg"||f.type==="chips";
+    const lab=isGroup?el("span",{class:"lbl"},f.label):el("label",{for:"f_"+f.id},f.label);
+    const wrap=el("div",{class:"f"+(f.w2?" w2":"")},lab,ctl);
+    if(f.auto){wrap.append(el("div",{},el("button",{type:"button",class:"btn ghost",onclick:()=>{R.d.conclusao=autoConclusion();$("#f_conclusao").value=R.d.conclusao;changed()}},"Sugerir conclusão a partir dos achados")))}
+    g.append(wrap)});
+   card.append(g)}
+  sectionsEl.append(card)});
+ hdr()}
+
+/* lesions with bladder map */
+function renderLesions(){
+ const box=el("div",{});
+ const zones=[["Cúpula",60,6,100,38],["Parede anterior",14,40,52,46],["Parede posterior",154,40,52,46],["Parede lateral direita",14,92,52,52],["Parede lateral esquerda",154,92,52,52],["Trígono",70,108,80,40],["Colo vesical",88,152,44,22]];
+ const used=new Set(R.lesions.map(l=>l.local));
+ const svg='<svg viewBox="0 0 220 180" role="img" aria-label="Mapa vesical: toque numa região para adicionar uma lesão">'+
+  '<path d="M110 8 C40 8 14 50 14 100 C14 140 50 168 110 172 C170 168 206 140 206 100 C206 50 180 8 110 8Z" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width="1.5"/>'+
+  zones.map(z=>`<g data-z="${z[0]}"><rect class="zone${used.has(z[0])?" on":""}" x="${z[1]}" y="${z[2]}" width="${z[3]}" height="${z[4]}" rx="8" tabindex="0"/><text x="${z[1]+z[3]/2}" y="${z[2]+z[4]/2+3}" text-anchor="middle">${short(z[0])}</text></g>`).join("")+
+  '<circle cx="88" cy="112" r="3" fill="currentColor" fill-opacity=".45"/><circle cx="132" cy="112" r="3" fill="currentColor" fill-opacity=".45"/>'+
+  '<text x="88" y="104" text-anchor="middle">MD</text><text x="132" y="104" text-anchor="middle">ME</text></svg>';
+ const map=el("div",{class:"map"});
+ const holder=el("div",{style:"color:var(--muted)"});holder.innerHTML=svg;
+ holder.querySelectorAll("g[data-z]").forEach(g=>{const add=()=>{R.noLesions=false;R.lesions.push({local:g.dataset.z,numero:"1"});changed(true)};g.addEventListener("click",add);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();add()}})});
+ map.append(holder,el("div",{class:"cap"},
+   el("p",{style:"margin:0 0 10px"},"Toque numa região do mapa para registrar uma lesão nessa parede, ou use o botão abaixo."),
+   el("div",{class:"seg",style:"max-width:340px"},
+     el("button",{type:"button",class:"chip","aria-pressed":R.noLesions?"true":"false",onclick:()=>{R.noLesions=!R.noLesions;if(R.noLesions)R.lesions=[];changed(true)}},"Sem lesões vegetantes"),
+     el("button",{type:"button",class:"chip","aria-pressed":"false",onclick:()=>{R.noLesions=false;R.lesions.push({numero:"1"});changed(true)}},"+ Adicionar lesão"))));
+ box.append(map);
+ const list=el("div",{class:"lesions"});
+ if(!R.lesions.length)list.append(el("p",{class:"empty"},R.noLesions?"Registrado: ausência de lesões vegetantes.":"Nenhuma lesão registrada."));
+ R.lesions.forEach((L,i)=>{
+  const sel=(k,opts,lab)=>{const s=el("select",{id:`les_${i}_${k}`});s.append(el("option",{value:""},"—"));opts.forEach(o=>s.append(el("option",{value:o},o)));s.value=L[k]||"";s.addEventListener("change",()=>{L[k]=s.value;changed(k==="local")});return el("div",{class:"f"},el("label",{for:s.id},lab),s)};
+  const num=(k,lab,suf)=>{const t=el("input",{id:`les_${i}_${k}`,type:"number",inputmode:"decimal",step:"any"});t.value=L[k]||"";t.addEventListener("input",()=>{L[k]=t.value;changed()});return el("div",{class:"f"},el("label",{for:t.id},lab),el("div",{class:"suf"},t,el("span",{},suf)))};
+  const obs=el("input",{id:`les_${i}_obs`,type:"text"});obs.value=L.obs||"";obs.addEventListener("input",()=>{L.obs=obs.value;changed()});
+  list.append(el("div",{class:"lesion"},
+   el("div",{class:"head"},"Lesão "+(i+1),el("span",{class:"sp"}),el("button",{type:"button",class:"btn ghost danger",onclick:()=>{R.lesions.splice(i,1);changed(true)}},"Remover")),
+   el("div",{class:"grid"},sel("local",LES_LOCAL,"Localização"),sel("aspecto",LES_ASP,"Aspecto"),num("numero","Número","lesões"),num("tamanho","Maior diâmetro","cm"),sel("base",LES_BASE,"Base"),el("div",{class:"f"},el("label",{for:obs.id},"Observação"),obs)))) });
+ box.append(list);return box}
+function short(z){return({"Parede anterior":"ANT","Parede posterior":"POST","Parede lateral direita":"LAT D","Parede lateral esquerda":"LAT E","Cúpula":"CÚPULA","Trígono":"TRÍGONO","Colo vesical":"COLO"})[z]||z}
+
+/* photos */
+function renderPhotos(){
+ const d=el("div",{class:"drop",id:"drop"},
+  el("p",{},"Fotografe a ficha preenchida à mão. A imagem é anexada a este laudo e sai nas páginas finais do PDF."),
+  el("div",{class:"quick"},
+   el("button",{type:"button",class:"btn primary",onclick:()=>$("#inCam").click()},camIcon(),"Tirar foto"),
+   el("button",{type:"button",class:"btn",onclick:()=>$("#inGal").click()},"Escolher da galeria / arquivo")));
+ if(R.photos.length){const g=el("div",{class:"photos"});R.photos.forEach((p,i)=>{
+   const img=el("img",{src:p.src,alt:"Ficha manual, foto "+(i+1),onclick:()=>{$("#lbImg").src=p.src;$("#lightbox").hidden=false}});
+   g.append(el("div",{class:"ph"},img,el("button",{type:"button",class:"x","aria-label":"Remover foto "+(i+1),onclick:()=>ask("Remover esta foto do laudo?",()=>{R.photos.splice(i,1);changed(true)})},"×"),el("div",{class:"cap"},"Foto "+(i+1)+" · "+Math.round(p.src.length*0.75/1024)+" KB")))});
+   d.append(g)}
+ ["dragover","dragenter"].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add("over")}));
+ ["dragleave","drop"].forEach(ev=>d.addEventListener(ev,()=>d.classList.remove("over")));
+ d.addEventListener("drop",e=>{e.preventDefault();addFiles(e.dataTransfer.files)});
+ return d}
+function camIcon(){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.setAttribute("fill","none");s.setAttribute("stroke","currentColor");s.setAttribute("stroke-width","2");s.innerHTML='<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>';return s}
+async function addFiles(files){
+ const arr=[...(files||[])].filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|webp)$/i.test(f.name));
+ if(!arr.length){toast("Escolha um arquivo de imagem.");return}
+ toast("Processando foto…");
+ for(const f of arr){try{R.photos.push({src:await shrink(f),added:Date.now()})}catch(e){toast("Não foi possível ler "+f.name+". Tente uma foto em JPG ou PNG.")}}
+ changed(true);toast(arr.length>1?arr.length+" fotos anexadas":"Foto anexada")}
+function shrink(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{const M=1800;let w=img.naturalWidth,h=img.naturalHeight;const k=Math.min(1,M/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",0.82))};img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url})}
+$("#inCam").addEventListener("change",e=>{addFiles(e.target.files);e.target.value=""});
+$("#inGal").addEventListener("change",e=>{addFiles(e.target.files);e.target.value=""});
+$("#btnPhotoTop").addEventListener("click",()=>document.getElementById("s_ficha").scrollIntoView());
+$("#lightbox").addEventListener("click",()=>$("#lightbox").hidden=true);
+
+/* ---------- save ---------- */
+let tmr=null;
+function changed(rerender){R.updated=Date.now();$("#saveState").textContent="salvando…";if(rerender){const y=window.scrollY;render();window.scrollTo(0,y)}clearTimeout(tmr);tmr=setTimeout(save,500)}
+async function save(){const p=prefs.get();PREF_KEYS.forEach(k=>{if(R.d[k])p[k]=R.d[k]});prefs.set(p);const ok=await store.put(JSON.parse(JSON.stringify(R)));prefs.setLast(R.id);$("#saveState").textContent=ok?"salvo neste aparelho":"não salvo (armazenamento bloqueado)"}
+function hdr(){const n=R.d.nome||"Novo laudo";$("#hdrPatient").textContent=n+(R.d.data?" · "+fmtDate(R.d.data):"")}
+const fmtDate=s=>{if(!s)return"";const[y,m,d]=s.split("-");return d&&m&&y?`${d}/${m}/${y}`:s};
+
+/* ---------- text report ---------- */
+function val(f){const v=R.d[f.id];if(Array.isArray(v))return v.join(", ");if(v==null||v==="")return"";if(f.type==="date")return fmtDate(v);return f.suf?dec(v)+" "+f.suf:String(v)}
+const dec=v=>String(v).replace(".",",");
+function lesionText(L,i){const n=parseInt(L.numero||"1",10)||1;let t=(n>1?n+" lesões":"Lesão")+(L.aspecto?" "+L.aspecto.toLowerCase():"");if(L.local)t+=(L.local==="Dentro de divertículo"?" ":/^Junto/.test(L.local)?" ":" em ")+L.local.toLowerCase().replace(/^parede/,"parede");const x=[];if(L.tamanho)x.push((n>1?"a maior com ":"com ")+dec(L.tamanho)+" cm");if(L.base&&L.base!=="Não avaliada")x.push(L.base.toLowerCase());if(L.obs)x.push(L.obs);return t+(x.length?", "+x.join(", "):"")}
+function reportSections(){
+ const male=R.d.sexo!=="Feminino";const out=[];
+ SECTIONS.forEach(sec=>{
+  if(sec.id==="ident"||sec.id==="ficha")return;
+  const lines=[];
+  if(sec.custom==="lesions"){if(R.lesions.length)R.lesions.forEach((L,i)=>lines.push(lesionText(L,i)));else if(R.noLesions)lines.push("Ausência de lesões vegetantes.")}
+  else if(sec.id==="meatos"){[["d","Direito"],["e","Esquerdo"]].forEach(([k,n])=>{const v=["pos","forma","efl"].map(x=>R.d["m"+k+"_"+x]).filter(Boolean);if(v.length)lines.push({label:n,text:v.join(", ").toLowerCase().replace(/^./,c=>c.toUpperCase())})})}
+  else sec.fields.forEach(f=>{if(f.male&&!male)return;if(f.show&&!f.show(R.d))return;if(["medico","crm"].includes(f.id))return;const v=val(f);if(!v||v==="Não se aplica")return;if(/_obs$/.test(f.id)||f.id==="conclusao")lines.push({label:f.id==="conclusao"?"Conclusão":f.label,text:v,block:1});else lines.push({label:f.label,text:v})});
+  if(lines.length)out.push({title:sec.id==="prostata"&&!male?"Colo vesical":sec.title,lines})});
+ return out}
+function identLines(){const d=R.d,a=[];if(d.nome)a.push(["Paciente",d.nome]);const id=[];if(d.idade)id.push(d.idade+" anos");if(d.sexo)id.push(d.sexo.toLowerCase());if(id.length)a.push(["Idade / sexo",id.join(", ")]);if(d.nasc)a.push(["Nascimento",fmtDate(d.nasc)]);if(d.prontuario)a.push(["Prontuário",d.prontuario]);if(d.convenio)a.push(["Convênio",d.convenio]);if(d.data)a.push(["Data do exame",fmtDate(d.data)]);if(d.local)a.push(["Local",d.local]);if(d.solicitante)a.push(["Solicitante",d.solicitante]);return a}
+function plainText(){
+ const t=["LAUDO DE CISTOSCOPIA",""];identLines().forEach(([k,v])=>t.push(k+": "+v));
+ reportSections().forEach(s=>{t.push("",s.title.toUpperCase());s.lines.forEach(l=>t.push(typeof l==="string"?"- "+l:(l.label+": "+l.text)))});
+ if(R.photos.length)t.push("","Anexo: "+R.photos.length+" foto(s) da ficha manual.");
+ if(R.d.medico||R.d.crm)t.push("","Dr(a). "+(R.d.medico||"")+(R.d.crm?" · CRM "+R.d.crm:""));
+ return t.join("\n")}
+function autoConclusion(){
+ const d=R.d,male=d.sexo!=="Feminino",ab=[];
+ const isAb=(f)=>{const v=d[f.id];if(!f.normal||v==null||v===""||(Array.isArray(v)&&!v.length))return false;return Array.isArray(f.normal)?!(Array.isArray(v)&&v.every(x=>f.normal.includes(x))):v!==f.normal};
+ if(d.ur_ant==="Estenose")ab.push("Estenose de uretra "+(d.est_local?d.est_local.toLowerCase():"anterior")+(d.est_ext?" com cerca de "+d.est_ext+" cm":"")+(d.est_transp==="Não"?", não transposta pelo aparelho":""));
+ ALLF.forEach(f=>{if(["ur_ant","md_pos","me_pos","md_forma","me_forma","md_efl","me_efl","intercorr","loja"].includes(f.id))return;if(f.male&&!male)return;if(!isAb(f))return;const v=d[f.id];
+  const txt=Array.isArray(v)?f.label+": "+v.join(", ").toLowerCase():f.label+": "+String(v).toLowerCase();ab.push(f.id==="trab"?"Trabeculação vesical "+v.toLowerCase():txt)});
+ if(male&&d.loja&&d.loja!=="Não se aplica")ab.push("Loja prostática "+d.loja.toLowerCase());
+ [["d","direito"],["e","esquerdo"]].forEach(([s,n])=>{const x=[];["pos","forma","efl"].forEach(k=>{const f=FMAP["m"+s+"_"+k];if(isAb(f))x.push(d[f.id].toLowerCase())});if(x.length)ab.push("Meato ureteral "+n+": "+x.join(", "))});
+ R.lesions.forEach((L,i)=>ab.push(lesionText(L,i).replace(/^Lesão/,"Lesão vesical")));
+ if(!ab.length)return"Cistoscopia sem alterações significativas."+(d.intercorr&&d.intercorr!=="Sem intercorrências"?" "+d.intercorr+".":"");
+ return ab.map(x=>x.charAt(0).toUpperCase()+x.slice(1)+".").join("\n")+(d.intercorr&&d.intercorr!=="Sem intercorrências"?"\nIntercorrência: "+d.intercorr.toLowerCase()+".":"")}
+
+/* ---------- normal fill ---------- */
+$("#btnNormal").addEventListener("click",()=>{ALLF.forEach(f=>{if(f.normal)R.d[f.id]=Array.isArray(f.normal)?[...f.normal]:f.normal});R.noLesions=true;R.lesions=[];if(!R.d.conclusao)R.d.conclusao="Cistoscopia sem alterações significativas.";changed(true);toast("Achados normais preenchidos. Ajuste o que for diferente.")});
+
+/* ---------- PDF ---------- */
+async function makePdf(){
+ const J=window.jspdf&&window.jspdf.jsPDF;if(!J)return null;
+ const doc=new J({unit:"mm",format:"a4"});const W=210,H=297,M=18,CW=W-2*M;let y=M;
+ const ensure=h=>{if(y+h>H-M){doc.addPage();y=M}};
+ const accent=[31,94,140];
+ doc.setFont("helvetica","bold");doc.setFontSize(16);doc.setTextColor(...accent);doc.text("Laudo de Cistoscopia",M,y+4);
+ doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(90);
+ const right=[R.d.local,R.d.data?fmtDate(R.d.data):""].filter(Boolean).join("  ·  ");if(right)doc.text(right,W-M,y+4,{align:"right"});
+ y+=9;doc.setDrawColor(...accent);doc.setLineWidth(.6);doc.line(M,y,W-M,y);y+=6;
+ doc.setTextColor(20);doc.setFontSize(10);
+ const il=identLines().filter(([k])=>k!=="Data do exame"&&k!=="Local");const colW=CW/2;
+ for(let i=0;i<il.length;i+=2){ensure(6);[il[i],il[i+1]].forEach((p,j)=>{if(!p)return;const x=M+j*colW;doc.setFont("helvetica","bold");doc.text(p[0]+":",x,y);const lw=doc.getTextWidth(p[0]+": ");doc.setFont("helvetica","normal");doc.text(doc.splitTextToSize(p[1],colW-lw-2)[0],x+lw,y)});y+=5.5}
+ y+=2;
+ reportSections().forEach(s=>{
+  ensure(14);y+=3;doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(...accent);doc.text(s.title.toUpperCase(),M,y);y+=1.6;doc.setDrawColor(200);doc.setLineWidth(.2);doc.line(M,y,W-M,y);y+=4.6;
+  doc.setFontSize(10);doc.setTextColor(20);
+  s.lines.forEach(l=>{
+   if(typeof l==="string"){const w=doc.splitTextToSize("• "+l,CW-2);ensure(w.length*4.6);doc.setFont("helvetica","normal");doc.text(w,M+1,y);y+=w.length*4.6+.8;return}
+   if(l.block){const w=doc.splitTextToSize(l.text,CW);ensure(5+w.length*4.6);doc.setFont("helvetica","bold");doc.text(l.label+":",M,y);y+=4.8;doc.setFont(l.label==="Conclusão"?"helvetica":"helvetica","normal");doc.text(w,M,y);y+=w.length*4.6+1;return}
+   doc.setFont("helvetica","bold");const lab=l.label+": ";const lw=Math.min(doc.getTextWidth(lab),CW*.45);doc.setFont("helvetica","normal");const w=doc.splitTextToSize(l.text,CW-lw);ensure(w.length*4.6);doc.setFont("helvetica","bold");doc.text(lab,M,y);doc.setFont("helvetica","normal");doc.text(w,M+lw,y);y+=w.length*4.6+.8})});
+ if(R.photos.length){ensure(8);y+=3;doc.setFontSize(9);doc.setTextColor(90);doc.text("Anexo: "+R.photos.length+" foto(s) da ficha manual nas páginas seguintes.",M,y);y+=4}
+ ensure(26);y=Math.max(y+16,y);doc.setDrawColor(60);doc.setLineWidth(.3);doc.line(W/2-40,y,W/2+40,y);y+=4.5;doc.setFontSize(10);doc.setTextColor(20);doc.setFont("helvetica","bold");doc.text(R.d.medico?"Dr(a). "+R.d.medico:"Médico executor",W/2,y,{align:"center"});if(R.d.crm){y+=4.5;doc.setFont("helvetica","normal");doc.text("CRM "+R.d.crm,W/2,y,{align:"center"})}
+ for(let i=0;i<R.photos.length;i++){const p=R.photos[i];doc.addPage();doc.setFontSize(9);doc.setTextColor(90);doc.setFont("helvetica","normal");doc.text("Anexo "+(i+1)+" · Ficha manual"+(R.d.nome?" · "+R.d.nome:""),M,M);
+  const dim=await new Promise(r=>{const im=new Image();im.onload=()=>r([im.naturalWidth,im.naturalHeight]);im.onerror=()=>r([3,4]);im.src=p.src});
+  const maxW=CW,maxH=H-2*M-8;const k=Math.min(maxW/dim[0],maxH/dim[1]);const w=dim[0]*k,h=dim[1]*k;doc.addImage(p.src,"JPEG",M+(maxW-w)/2,M+5,w,h)}
+ const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(140);doc.text("Página "+i+" de "+pages,W-M,H-8,{align:"right"})}
+ return doc}
+function fileBase(){const n=(R.d.nome||"paciente").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w]+/g,"-").replace(/^-|-$/g,"").toLowerCase();return"cistoscopia-"+n+"-"+(R.d.data||today())}
+async function offerFile(filename,data){
+ if(IN_ARTIFACT){const dl=await window.claude.use("downloads").catch(()=>null);if(!dl){toast("Este visualizador não permite baixar arquivos. Use \"Copiar texto\".");return false}
+  try{await dl.save({filename,data});toast("Arquivo salvo");return true}catch(e){if(e&&e.code!=="declined")toast("Não foi possível salvar o arquivo ("+(e.code||"erro")+").");return false}}
+ const blob=data instanceof Blob?data:new Blob([data]);const u=URL.createObjectURL(blob);const a=el("a",{href:u,download:filename});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return true}
+$("#btnPdf").addEventListener("click",async()=>{toast("Gerando PDF…");const doc=await makePdf();if(!doc){if(!IN_ARTIFACT){printNow();return}toast("Não foi possível carregar o gerador de PDF. Verifique a conexão.");return}await offerFile(fileBase()+".pdf",doc.output("blob"))});
+function printNow(){const pa=$("#printArea");pa.replaceChildren(el("h1",{},"Laudo de Cistoscopia"));identLines().forEach(([k,v])=>pa.append(el("p",{},el("b",{},k+": "),v)));reportSections().forEach(s=>{pa.append(el("h4",{},s.title));s.lines.forEach(l=>pa.append(typeof l==="string"?el("p",{},"• "+l):el("p",{},el("b",{},l.label+": "),l.text)))});if(R.d.medico)pa.append(el("p",{style:"margin-top:28pt;text-align:center"},"_______________________________",el("br"),"Dr(a). "+R.d.medico+(R.d.crm?" · CRM "+R.d.crm:"")));R.photos.forEach(p=>pa.append(el("img",{src:p.src,alt:"Ficha manual"})));window.print()}
+if(!IN_ARTIFACT){$("#btnPrint").hidden=false;$("#btnPrint").addEventListener("click",printNow)}
+$("#btnCopy").addEventListener("click",()=>{const t=plainText();const fb=()=>{const ta=el("textarea",{style:"position:fixed;top:0;left:0;opacity:0"});ta.value=t;document.body.append(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}ta.remove();toast(ok?"Texto do laudo copiado":"Não foi possível copiar neste aparelho.")};
+ try{navigator.clipboard.writeText(t).then(()=>toast("Texto do laudo copiado"),fb)}catch(e){fb()}});
+
+/* ---------- list / new / delete / backup ---------- */
+async function openList(){$("#drawer").hidden=false;await drawList()}
+async function drawList(){const q=($("#q").value||"").toLowerCase();const all=(await store.all()).sort((a,b)=>b.updated-a.updated);const L=$("#list");L.replaceChildren();
+ const shown=all.filter(r=>!q||((r.d.nome||"")+" "+(r.d.prontuario||"")).toLowerCase().includes(q));
+ if(!shown.length)L.append(el("p",{class:"empty"},all.length?"Nenhum laudo encontrado.":"Nenhum laudo salvo ainda."));
+ shown.forEach(r=>L.append(el("div",{class:"item"+(r.id===R.id?" cur":""),role:"button",tabindex:"0",onclick:()=>{load(r);$("#drawer").hidden=true},onkeydown:e=>{if(e.key==="Enter"){load(r);$("#drawer").hidden=true}}},
+  el("div",{class:"t"},el("b",{},r.d.nome||"Sem nome"),el("span",{},[fmtDate(r.d.data),r.d.prontuario,r.photos&&r.photos.length?r.photos.length+" foto(s)":""].filter(Boolean).join(" · "))),
+  el("button",{type:"button",class:"btn ghost danger","aria-label":"Excluir laudo",onclick:e=>{e.stopPropagation();ask(`Excluir o laudo de ${r.d.nome||"paciente sem nome"}? Isso não pode ser desfeito.`,async()=>{await store.del(r.id);if(r.id===R.id){R=blank();render()}drawList()})}},"Excluir"))))}
+function load(r){R=JSON.parse(JSON.stringify(r));R.lesions=R.lesions||[];R.photos=R.photos||[];prefs.setLast(R.id);render();window.scrollTo(0,0)}
+$("#btnList").addEventListener("click",openList);
+$("#btnCloseList").addEventListener("click",()=>$("#drawer").hidden=true);
+$("#drawer").addEventListener("click",e=>{if(e.target.id==="drawer")$("#drawer").hidden=true});
+$("#q").addEventListener("input",drawList);
+$("#btnNew").addEventListener("click",()=>{R=blank();render();window.scrollTo(0,0);toast("Novo laudo iniciado")});
+$("#btnExport").addEventListener("click",async()=>{const all=await store.all();if(!all.length){toast("Não há laudos para exportar.");return}await offerFile("laudos-cistoscopia-backup-"+today()+".json",JSON.stringify({app:"laudo-cistoscopia",v:1,laudos:all}))});
+$("#btnImport").addEventListener("click",()=>$("#inBackup").click());
+$("#inBackup").addEventListener("change",async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;try{const j=JSON.parse(await f.text());const arr=Array.isArray(j)?j:j.laudos;if(!Array.isArray(arr))throw 0;let n=0;for(const r of arr){if(r&&r.id&&r.d){await store.put(r);n++}}toast(n+" laudo(s) restaurado(s)");drawList()}catch(err){toast("Arquivo de backup inválido.")}});
+
+/* confirm + toast */
+let onYes=null;
+function ask(msg,fn){$("#confirmMsg").textContent=msg;onYes=fn;$("#confirm").hidden=false;$("#cYes").focus()}
+$("#cNo").addEventListener("click",()=>{$("#confirm").hidden=true;onYes=null});
+$("#cYes").addEventListener("click",()=>{$("#confirm").hidden=true;const f=onYes;onYes=null;f&&f()});
+let tt=null;function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("#lightbox").hidden=true;$("#drawer").hidden=true;$("#confirm").hidden=true}});
+
+/* ---------- boot ---------- */
+render();
+openDB().then(async()=>{const last=prefs.last();if(last){const all=await store.all();const r=all.find(x=>x.id===last);if(r){load(r);return}}});
+})();
+</script>
+
+<script>if("serviceWorker" in navigator&&location.protocol==="https:"){navigator.serviceWorker.register("sw.js").catch(function(){})}</script>
+</body>
+</html>
