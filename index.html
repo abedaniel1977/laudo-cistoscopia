@@ -63,6 +63,7 @@ section.card{background:var(--surface);border:1px solid var(--line);border-radiu
 .card h2{margin:0 0 12px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);display:flex;align-items:center;gap:10px}
 .card h2 .n{font-family:var(--font-mono);font-weight:500;color:var(--muted);letter-spacing:0}
 .card h2 .sp{flex:1}
+.card h2 .pend{color:var(--alert)}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
 .f{display:flex;flex-direction:column;gap:5px;min-width:0}
 .f.w2{grid-column:1/-1}
@@ -263,6 +264,22 @@ const SECTIONS=[
   S("corpo","Cateter / corpo estranho","select",{options:["Nenhum","Cateter duplo J à direita","Cateter duplo J à esquerda","Cateter duplo J bilateral","Outro corpo estranho"],normal:"Nenhum"}),
   S("bexiga_obs","Observações","textarea",{w2:1})]},
  {id:"lesoes",title:"Lesões vesicais",custom:"lesions"},
+ {id:"rtu",title:"Checklist RTU de bexiga",fields:[
+  S("rtu","Este procedimento inclui RTU de bexiga?","seg",{w2:1,options:["Sim","Não"]}),
+  S("t_num","1 · Número de tumores","seg",{w2:1,rtu:1,options:["1","2-5","> 5","Difuso"]}),
+  S("t_tam","2 · Tamanho do maior tumor","seg",{w2:1,rtu:1,help:"Referência: a alça de ressecção mede cerca de 1 cm.",options:["< 1 cm","1-3 cm","> 3 cm"]}),
+  S("t_morf","3 · Características morfológicas","chips",{w2:1,rtu:1,options:["Papilar","Nodular","Séssil","Plana"]}),
+  S("t_tipo","4 · Tipo do tumor","seg",{rtu:1,options:["Primário","Recorrente"]}),
+  S("t_cis","5 · Presença de CIS","seg",{rtu:1,options:["Suspeito","Não suspeito"]}),
+  S("t_ct","6 · Estadiamento clínico (AJCC)","seg",{w2:1,rtu:1,options:["cTis","cTa","cT1","cT2","cT3","cT4"]}),
+  S("t_bim","7 · Exame bimanual sob anestesia","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_compl","8 · Ressecção completa visual","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_detr","9 · Músculo detrusor visualizado","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_perf","10 · Avaliação visual para perfuração","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_foto","11 · Foto do leito de ressecção","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_desenho","12 · Desenho ou descrição da localização","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_biop","13 · Biópsia profunda separada enviada","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_obs","Observações da RTU","textarea",{w2:1,rtu:1})]},
  {id:"meatos",title:"Meatos ureterais",fields:[
   S("md_pos","Direito · posição","select",{options:["Tópico","Ectópico","Não identificado"],normal:"Tópico"}),
   S("me_pos","Esquerdo · posição","select",{options:["Tópico","Ectópico","Não identificado"],normal:"Tópico"}),
@@ -341,6 +358,7 @@ function render(){
   const title=sec.id==="prostata"&&!male?"Colo vesical":sec.title;
   jump.append(el("a",{href:"#s_"+sec.id,onclick:e=>{e.preventDefault();document.getElementById("s_"+sec.id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}},title));
   const h=el("h2",{},el("span",{class:"n"},String(n).padStart(2,"0")),title,el("span",{class:"sp"}));
+  if(sec.id==="rtu"&&R.d.rtu==="Sim"){const it=sec.fields.filter(f=>/^\d/.test(f.label));const k=it.filter(f=>{const v=R.d[f.id];return Array.isArray(v)?v.length:v}).length;h.append(el("span",{class:"n"+(k<it.length?" pend":"")},k+" de "+it.length+" itens"))}
   const card=el("section",{class:"card",id:"s_"+sec.id},h);
   if(sec.custom==="lesions")card.append(renderLesions());
   else if(sec.custom==="photos")card.append(renderPhotos());
@@ -348,11 +366,12 @@ function render(){
    const g=el("div",{class:"grid"});
    sec.fields.forEach(f=>{
     if(f.male&&!male)return;
+    if(f.rtu&&R.d.rtu!=="Sim")return;
     if(f.show&&!f.show(R.d))return;
     const ctl=fieldControl(f);
     const isGroup=f.type==="seg"||f.type==="chips";
     const lab=isGroup?el("span",{class:"lbl"},f.label):el("label",{for:"f_"+f.id},f.label);
-    const wrap=el("div",{class:"f"+(f.w2?" w2":"")},lab,ctl);
+    const wrap=el("div",{class:"f"+(f.w2?" w2":"")},lab,ctl);if(f.help)wrap.append(el("span",{class:"note"},f.help));
     if(f.auto){wrap.append(el("div",{},el("button",{type:"button",class:"btn ghost",onclick:()=>{R.d.conclusao=autoConclusion();$("#f_conclusao").value=R.d.conclusao;changed()}},"Sugerir conclusão a partir dos achados")))}
     g.append(wrap)});
    card.append(g)}
@@ -436,8 +455,8 @@ function reportSections(){
   const lines=[];
   if(sec.custom==="lesions"){if(R.lesions.length)R.lesions.forEach((L,i)=>lines.push(lesionText(L,i)));else if(R.noLesions)lines.push("Ausência de lesões vegetantes.")}
   else if(sec.id==="meatos"){[["d","Direito"],["e","Esquerdo"]].forEach(([k,n])=>{const v=["pos","forma","efl"].map(x=>R.d["m"+k+"_"+x]).filter(Boolean);if(v.length)lines.push({label:n,text:v.join(", ").toLowerCase().replace(/^./,c=>c.toUpperCase())})})}
-  else sec.fields.forEach(f=>{if(f.male&&!male)return;if(f.show&&!f.show(R.d))return;if(["medico","crm"].includes(f.id))return;const v=val(f);if(!v||v==="Não se aplica")return;if(/_obs$/.test(f.id)||f.id==="conclusao")lines.push({label:f.id==="conclusao"?"Conclusão":f.label,text:v,block:1});else lines.push({label:f.label,text:v})});
-  if(lines.length)out.push({title:sec.id==="prostata"&&!male?"Colo vesical":sec.title,lines})});
+  else sec.fields.forEach(f=>{if(f.male&&!male)return;if(f.rtu&&R.d.rtu!=="Sim")return;if(f.id==="rtu")return;if(f.show&&!f.show(R.d))return;if(["medico","crm"].includes(f.id))return;const v=val(f);if(!v||v==="Não se aplica")return;if(/_obs$/.test(f.id)||f.id==="conclusao")lines.push({label:f.id==="conclusao"?"Conclusão":f.label,text:v,block:1});else lines.push({label:f.label,text:v})});
+  if(lines.length)out.push({title:sec.id==="prostata"&&!male?"Colo vesical":sec.id==="rtu"?"Checklist RTU de bexiga (MSKCC, Herr e Anderson)":sec.title,lines})});
  return out}
 function identLines(){const d=R.d,a=[];if(d.nome)a.push(["Paciente",d.nome]);const id=[];if(d.idade)id.push(d.idade+" anos");if(d.sexo)id.push(d.sexo.toLowerCase());if(id.length)a.push(["Idade / sexo",id.join(", ")]);if(d.nasc)a.push(["Nascimento",fmtDate(d.nasc)]);if(d.prontuario)a.push(["Prontuário",d.prontuario]);if(d.convenio)a.push(["Convênio",d.convenio]);if(d.data)a.push(["Data do exame",fmtDate(d.data)]);if(d.local)a.push(["Local",d.local]);if(d.solicitante)a.push(["Solicitante",d.solicitante]);return a}
 function plainText(){
@@ -481,7 +500,7 @@ async function makePdf(){
   s.lines.forEach(l=>{
    if(typeof l==="string"){const w=doc.splitTextToSize("• "+l,CW-2);ensure(w.length*4.6);doc.setFont("helvetica","normal");doc.text(w,M+1,y);y+=w.length*4.6+.8;return}
    if(l.block){const w=doc.splitTextToSize(l.text,CW);ensure(5+w.length*4.6);doc.setFont("helvetica","bold");doc.text(l.label+":",M,y);y+=4.8;doc.setFont(l.label==="Conclusão"?"helvetica":"helvetica","normal");doc.text(w,M,y);y+=w.length*4.6+1;return}
-   doc.setFont("helvetica","bold");const lab=l.label+": ";const lw=Math.min(doc.getTextWidth(lab),CW*.45);doc.setFont("helvetica","normal");const w=doc.splitTextToSize(l.text,CW-lw);ensure(w.length*4.6);doc.setFont("helvetica","bold");doc.text(lab,M,y);doc.setFont("helvetica","normal");doc.text(w,M+lw,y);y+=w.length*4.6+.8})});
+   doc.setFont("helvetica","bold");const lab=l.label+": ";const full=doc.getTextWidth(lab);if(full>CW*.5){const w=doc.splitTextToSize(l.text,CW-6);ensure(4.8+w.length*4.6);doc.text(lab,M,y);y+=4.8;doc.setFont("helvetica","normal");doc.text(w,M+6,y);y+=w.length*4.6+.8;return}const lw=full;doc.setFont("helvetica","normal");const w=doc.splitTextToSize(l.text,CW-lw);ensure(w.length*4.6);doc.setFont("helvetica","bold");doc.text(lab,M,y);doc.setFont("helvetica","normal");doc.text(w,M+lw,y);y+=w.length*4.6+.8})});
  if(R.photos.length){ensure(8);y+=3;doc.setFontSize(9);doc.setTextColor(90);doc.text("Anexo: "+R.photos.length+" foto(s) da ficha manual nas páginas seguintes.",M,y);y+=4}
  ensure(26);y=Math.max(y+16,y);doc.setDrawColor(60);doc.setLineWidth(.3);doc.line(W/2-40,y,W/2+40,y);y+=4.5;doc.setFontSize(10);doc.setTextColor(20);doc.setFont("helvetica","bold");doc.text(R.d.medico?"Dr(a). "+R.d.medico:"Médico executor",W/2,y,{align:"center"});if(R.d.crm){y+=4.5;doc.setFont("helvetica","normal");doc.text("CRM "+R.d.crm,W/2,y,{align:"center"})}
  for(let i=0;i<R.photos.length;i++){const p=R.photos[i];doc.addPage();doc.setFontSize(9);doc.setTextColor(90);doc.setFont("helvetica","normal");doc.text("Anexo "+(i+1)+" · Ficha manual"+(R.d.nome?" · "+R.d.nome:""),M,M);
