@@ -269,6 +269,7 @@ const SECTIONS=[
   S("t_tec","Técnica de RTU","chips",{w2:1,rtu:1,options:["Ressecção em bloco","Ressecção com alça","Fulguração"]}),
   S("t_num","1 · Número de tumores","seg",{w2:1,rtu:1,options:["1","2-5","> 5","Difuso"]}),
   S("t_tam","2 · Tamanho do maior tumor","seg",{w2:1,rtu:1,help:"Referência: a alça de ressecção mede cerca de 1 cm.",options:["< 1 cm","1-3 cm","> 3 cm"]}),
+  S("t_tam_cm","Tamanho medido do maior tumor (opcional)","number",{rtu:1,suf:"cm",help:"Ao digitar, a faixa do item 2 é marcada automaticamente."}),
   S("t_morf","3 · Características morfológicas","chips",{w2:1,rtu:1,options:["Papilar","Nodular","Séssil","Plana"]}),
   S("t_tipo","4 · Tipo do tumor","seg",{rtu:1,options:["Primário","Recorrente"]}),
   S("t_cis","5 · Presença de CIS","seg",{rtu:1,options:["Suspeito","Não suspeito"]}),
@@ -328,7 +329,7 @@ function fieldControl(f){
  const v=R.d[f.id];
  if(f.type==="seg"||f.type==="chips"){
   const multi=f.type==="chips";
-  const box=el("div",{class:multi?"chips":"seg",role:"group","aria-label":f.label});
+  const box=el("div",{class:multi?"chips":"seg",role:"group","aria-label":f.label,id:"f_"+f.id});
   f.options.forEach(o=>{
    const on=multi?(Array.isArray(v)&&v.includes(o)):v===o;
    const abn=f.normal&&multi&&!f.normal.includes(o);
@@ -343,9 +344,10 @@ function fieldControl(f){
  if(f.type==="textarea"){const t=el("textarea",{id:"f_"+f.id,rows:3});t.value=v||"";t.addEventListener("input",()=>{R.d[f.id]=t.value;changed()});return t}
  const i=el("input",{id:"f_"+f.id,type:f.type==="number"?"number":f.type,inputmode:f.type==="number"?"decimal":null,step:f.type==="number"?"any":null});
  i.value=v||"";
- i.addEventListener("input",()=>{R.d[f.id]=i.value;if(f.id==="nasc"){const a=age(i.value);if(a!=null){R.d.idade=String(a);const ie=$("#f_idade");if(ie)ie.value=a}}if(f.id==="nome")hdr();changed()});
+ i.addEventListener("input",()=>{R.d[f.id]=i.value;if(f.id==="nasc"){const a=age(i.value);if(a!=null){R.d.idade=String(a);const ie=$("#f_idade");if(ie)ie.value=a}}if(f.id==="nome")hdr();if(f.id==="t_tam_cm"){const n=parseFloat(String(i.value).replace(",","."));if(!isNaN(n)&&n>0){R.d.t_tam=n<1?"< 1 cm":n<=3?"1-3 cm":"> 3 cm";document.querySelectorAll("#f_t_tam .chip").forEach(b=>b.setAttribute("aria-pressed",b.textContent===R.d.t_tam?"true":"false"));updRtuCount()}}changed()});
  if(f.suf)return el("div",{class:"suf"},i,el("span",{},f.suf));
  return i}
+function updRtuCount(){const c=document.getElementById("rtuCount");if(!c)return;const it=SECTIONS.find(x=>x.id==="rtu").fields.filter(f=>/^\d/.test(f.label));const k=it.filter(f=>{const v=R.d[f.id];return Array.isArray(v)?v.length:v}).length;c.textContent=k+" de "+it.length+" itens";c.className="n"+(k<it.length?" pend":"")}
 function age(s){if(!s)return null;const b=new Date(s+"T00:00"),n=new Date();if(isNaN(b))return null;let a=n.getFullYear()-b.getFullYear();const m=n.getMonth()-b.getMonth();if(m<0||(m===0&&n.getDate()<b.getDate()))a--;return a>=0&&a<130?a:null}
 
 function render(){
@@ -359,7 +361,7 @@ function render(){
   const title=sec.id==="prostata"&&!male?"Colo vesical":sec.title;
   jump.append(el("a",{href:"#s_"+sec.id,onclick:e=>{e.preventDefault();document.getElementById("s_"+sec.id).scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}},title));
   const h=el("h2",{},el("span",{class:"n"},String(n).padStart(2,"0")),title,el("span",{class:"sp"}));
-  if(sec.id==="rtu"&&R.d.rtu==="Sim"){const it=sec.fields.filter(f=>/^\d/.test(f.label));const k=it.filter(f=>{const v=R.d[f.id];return Array.isArray(v)?v.length:v}).length;h.append(el("span",{class:"n"+(k<it.length?" pend":"")},k+" de "+it.length+" itens"))}
+  if(sec.id==="rtu"&&R.d.rtu==="Sim"){h.append(el("span",{class:"n",id:"rtuCount"}));setTimeout(updRtuCount)}
   const card=el("section",{class:"card",id:"s_"+sec.id},h);
   if(sec.custom==="lesions")card.append(renderLesions());
   else if(sec.custom==="photos")card.append(renderPhotos());
@@ -456,7 +458,7 @@ function reportSections(){
   const lines=[];
   if(sec.custom==="lesions"){if(R.lesions.length)R.lesions.forEach((L,i)=>lines.push(lesionText(L,i)));else if(R.noLesions)lines.push("Ausência de lesões vegetantes.")}
   else if(sec.id==="meatos"){[["d","Direito"],["e","Esquerdo"]].forEach(([k,n])=>{const v=["pos","forma","efl"].map(x=>R.d["m"+k+"_"+x]).filter(Boolean);if(v.length)lines.push({label:n,text:v.join(", ").toLowerCase().replace(/^./,c=>c.toUpperCase())})})}
-  else sec.fields.forEach(f=>{if(f.male&&!male)return;if(f.rtu&&R.d.rtu!=="Sim")return;if(f.id==="rtu")return;if(f.show&&!f.show(R.d))return;if(["medico","crm"].includes(f.id))return;const v=val(f);if(!v||v==="Não se aplica")return;if(/_obs$/.test(f.id)||f.id==="conclusao")lines.push({label:f.id==="conclusao"?"Conclusão":f.label,text:v,block:1});else lines.push({label:f.label,text:v})});
+  else sec.fields.forEach(f=>{if(f.male&&!male)return;if(f.rtu&&R.d.rtu!=="Sim")return;if(f.id==="rtu"||f.id==="t_tam_cm")return;if(f.id==="t_tam"&&R.d.t_tam_cm){lines.push({label:f.label,text:dec(R.d.t_tam_cm)+" cm"+(R.d.t_tam?" ("+R.d.t_tam+")":"")});return}if(f.show&&!f.show(R.d))return;if(["medico","crm"].includes(f.id))return;const v=val(f);if(!v||v==="Não se aplica")return;if(/_obs$/.test(f.id)||f.id==="conclusao")lines.push({label:f.id==="conclusao"?"Conclusão":f.label,text:v,block:1});else lines.push({label:f.label,text:v})});
   if(lines.length)out.push({title:sec.id==="prostata"&&!male?"Colo vesical":sec.id==="rtu"?"Checklist RTU de bexiga (MSKCC, Herr e Anderson)":sec.title,lines})});
  return out}
 function identLines(){const d=R.d,a=[];if(d.nome)a.push(["Paciente",d.nome]);const id=[];if(d.idade)id.push(d.idade+" anos");if(d.sexo)id.push(d.sexo.toLowerCase());if(id.length)a.push(["Idade / sexo",id.join(", ")]);if(d.nasc)a.push(["Nascimento",fmtDate(d.nasc)]);if(d.prontuario)a.push(["Prontuário",d.prontuario]);if(d.convenio)a.push(["Convênio",d.convenio]);if(d.data)a.push(["Data do exame",fmtDate(d.data)]);if(d.local)a.push(["Local",d.local]);if(d.solicitante)a.push(["Solicitante",d.solicitante]);return a}
