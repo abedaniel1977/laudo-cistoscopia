@@ -228,10 +228,24 @@ const SECTIONS=[
  {id:"indic",title:"Indicação",fields:[
   S("indicacao","Indicação","chips",{w2:1,options:["Hematúria macroscópica","Hematúria microscópica","Seguimento de tumor vesical","Sintomas do trato urinário inferior","ITU de repetição","Suspeita de estenose de uretra","Retirada de cateter duplo J","Dor pélvica / suspeita de cistite intersticial","Avaliação pré-operatória","Suspeita de fístula","Citologia oncótica alterada"]}),
   S("indicacao_obs","Detalhes da indicação","textarea",{w2:1})]},
+ {id:"antec",title:"Antecedentes e exames prévios",fields:[
+  S("hist_tu","Antecedente de tumor vesical","seg",{options:["Não","Sim"]}),
+  S("hist_tipo","Situação atual","seg",{options:["Primário","Recidiva"],show:d=>d.hist_tu==="Sim"}),
+  S("ult_rtu","Data da última RTU","date",{show:d=>d.hist_tu==="Sim"}),
+  S("ult_ap","Último anatomopatológico","text",{show:d=>d.hist_tu==="Sim"}),
+  S("risco","Grupo de risco (EAU)","select",{options:["Baixo","Intermediário","Alto","Muito alto"],show:d=>d.hist_tu==="Sim"}),
+  S("trat_ves","Tratamento intravesical prévio","chips",{w2:1,options:["Nenhum","Instilação única pós-RTU","Quimioterapia intravesical","BCG (indução)","BCG (manutenção)"],normal:["Nenhum"],nofill:1,show:d=>d.hist_tu==="Sim"}),
+  S("trat_ult","Data da última instilação","date",{show:d=>d.hist_tu==="Sim"&&Array.isArray(d.trat_ves)&&d.trat_ves.some(x=>x!=="Nenhum")}),
+  S("utuc","Tumor do trato urinário superior","select",{options:["Sem antecedente","Antecedente de tumor do trato superior","Em investigação"]}),
+  S("urotc","Uro-TC","select",{options:["Normal","Alterada","Não realizada"]}),
+  S("cit_prev","Citologia urinária prévia","select",{options:["Negativa (Paris 2)","Células atípicas (Paris 3)","Suspeita para alto grau (Paris 4)","Positiva para alto grau (Paris 5)","Não realizada"]}),
+  S("cit_coleta","Citologia / lavado vesical coletado neste exame","seg",{options:["Sim","Não"]}),
+  S("antec_obs","Observações","textarea",{w2:1})]},
  {id:"proc",title:"Procedimento",fields:[
   S("aparelho","Aparelho","seg",{options:["Flexível","Rígido"]}),
   S("calibre","Calibre","number",{suf:"Fr"}),
   S("otica","Ótica","select",{options:["0°","12°","30°","70°"]}),
+  S("imagem","Modalidade de imagem","select",{options:["Luz branca","Luz branca + NBI","Luz branca + PDD (luz azul)"]}),
   S("anestesia","Anestesia","select",{options:["Local (gel de lidocaína 2%)","Sedação","Raquianestesia","Anestesia geral"]}),
   S("urocultura","Urocultura prévia","select",{options:["Negativa","Positiva, tratada","Não realizada"]}),
   S("atb","Antibioticoprofilaxia","text")]},
@@ -253,6 +267,8 @@ const SECTIONS=[
   S("colo","Colo vesical","select",{options:["Normal","Elevado","Esclerose / contratura","Hipertrofia do colo"],normal:"Normal"}),
   S("prost_obs","Observações","textarea",{w2:1})]},
  {id:"bexiga",title:"Bexiga",fields:[
+  S("inspecao","Inspeção vesical","select",{w2:1,options:["Completa (todas as paredes, incluindo cúpula, parede anterior e colo em retroflexão)","Incompleta"],normal:"Completa (todas as paredes, incluindo cúpula, parede anterior e colo em retroflexão)"}),
+  S("insp_falta","Regiões não avaliadas e motivo","text",{w2:1,show:d=>d.inspecao==="Incompleta"}),
   S("urina","Aspecto da urina","select",{options:["Clara","Turva","Hematúrica","Com coágulos"],normal:"Clara"}),
   S("capacidade","Capacidade vesical","number",{suf:"mL"}),
   S("mucosa","Mucosa","chips",{w2:1,options:["Normal","Hiperemia difusa","Hiperemia focal","Edema bolhoso","Cistite cística / glandular","Leucoplasia","Áreas aveludadas","Hipervascularização","Telangiectasias","Glomerulações"],normal:["Normal"]}),
@@ -281,6 +297,11 @@ const SECTIONS=[
   S("t_foto","11 · Foto do leito de ressecção","seg",{rtu:1,options:["Sim","Não"]}),
   S("t_desenho","12 · Desenho ou descrição da localização","seg",{rtu:1,options:["Sim","Não"]}),
   S("t_biop","13 · Biópsia profunda separada enviada","seg",{rtu:1,options:["Sim","Não"]}),
+  S("t_int","Intenção da RTU","seg",{w2:1,rtu:1,options:["Diagnóstica","Terapêutica (ressecção completa)","Re-RTU"]}),
+  S("t_biop_ad","Biópsias adicionais","chips",{w2:1,rtu:1,options:["Nenhuma","Uretra prostática","Biópsias randômicas","Áreas suspeitas"],normal:["Nenhuma"],nofill:1}),
+  S("t_obt","Prevenção do reflexo obturador","select",{rtu:1,options:["Não necessária","Bloqueio do nervo obturador","Bloqueio neuromuscular (anestesia geral)","Ajuste de energia / ressecção bipolar"]}),
+  S("t_intra","Intercorrência intraoperatória","select",{rtu:1,options:["Nenhuma","Sangramento significativo","Perfuração extraperitoneal","Perfuração intraperitoneal","Reflexo obturador"],normal:"Nenhuma"}),
+  S("t_inst","Instilação imediata pós-RTU","select",{w2:1,rtu:1,options:["Realizada","Não indicada","Contraindicada (perfuração ou ressecção extensa)","Indicada, não realizada"]}),
   S("t_obs","Observações da RTU","textarea",{w2:1,rtu:1})]},
  {id:"meatos",title:"Meatos ureterais",fields:[
   S("md_pos","Direito · posição","select",{options:["Tópico","Ectópico","Não identificado"],normal:"Tópico"}),
@@ -291,11 +312,14 @@ const SECTIONS=[
   S("me_efl","Esquerdo · ejaculação","select",{options:["Urina clara","Urina hematúrica","Não observada"],normal:"Urina clara"})]},
  {id:"conclusao",title:"Conclusão e conduta",fields:[
   S("intercorr","Intercorrências","select",{options:["Sem intercorrências","Sangramento leve","Falso trajeto","Exame incompleto","Reação vasovagal"],normal:"Sem intercorrências"}),
+  S("toler","Tolerância ao exame","select",{options:["Boa","Regular","Ruim"],show:d=>/^Local/.test(d.anestesia||"")}),
+  S("dor","Dor referida (escala 0–10)","number",{suf:"/ 10",show:d=>/^Local/.test(d.anestesia||"")}),
   S("conclusao","Conclusão","textarea",{w2:1,auto:1}),
   S("conduta","Conduta","chips",{w2:1,options:["Alta urológica","Nova cistoscopia em 3 meses","Nova cistoscopia em 6 meses","Nova cistoscopia em 12 meses","Biópsia vesical","RTU de bexiga","Citologia urinária","Uro-TC","Uretrotomia / uretroplastia","Retirada de duplo J realizada","Estudo urodinâmico","Tratamento clínico"]}),
   S("conduta_obs","Detalhes da conduta","textarea",{w2:1}),
   S("medico","Médico executor","text"),
   S("crm","CRM","text")]},
+ {id:"endo",title:"Imagens endoscópicas",custom:"endo"},
  {id:"ficha",title:"Ficha manual",custom:"photos"}
 ];
 const ALLF=SECTIONS.flatMap(s=>s.fields||[]);
@@ -303,7 +327,8 @@ const FMAP=Object.fromEntries(ALLF.map(f=>[f.id,f]));
 const LES_LOCAL=["Trígono","Colo vesical","Parede lateral direita","Parede lateral esquerda","Parede posterior","Cúpula","Parede anterior","Junto ao meato direito","Junto ao meato esquerdo","Dentro de divertículo"];
 const LES_ASP=["Papilífera","Séssil / sólida","Plana, eritematosa (suspeita de CIS)","Ulcerada","Cicatriz de RTU prévia"];
 const LES_BASE=["Pediculada","Base larga","Não avaliada"];
-const PREF_KEYS=["local","medico","crm","aparelho","calibre","otica","anestesia"];
+const LES_PROC=["Nenhum","Biópsia","Fulguração","Biópsia + fulguração","Ressecção (RTU)"];
+const PREF_KEYS=["local","medico","crm","aparelho","calibre","otica","anestesia","imagem"];
 
 /* ---------- storage (IndexedDB, fallback memory) ---------- */
 let idb=null; const mem=new Map();
@@ -320,7 +345,7 @@ const prefs={get(){try{return JSON.parse(localStorage.getItem("lc-prefs")||"{}")
 /* ---------- state ---------- */
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-function blank(){const p=prefs.get();const d={data:today()};PREF_KEYS.forEach(k=>{if(p[k])d[k]=p[k]});if(!d.anestesia)d.anestesia="Local (gel de lidocaína 2%)";if(!d.aparelho)d.aparelho="Flexível";return{id:uid(),created:Date.now(),updated:Date.now(),d,lesions:[],noLesions:false,photos:[]}}
+function blank(){const p=prefs.get();const d={data:today()};PREF_KEYS.forEach(k=>{if(p[k])d[k]=p[k]});if(!d.anestesia)d.anestesia="Local (gel de lidocaína 2%)";if(!d.aparelho)d.aparelho="Flexível";if(!d.imagem)d.imagem="Luz branca";return{id:uid(),created:Date.now(),updated:Date.now(),d,lesions:[],noLesions:false,photos:[]}}
 let R=blank();
 
 /* ---------- render form ---------- */
@@ -364,7 +389,8 @@ function render(){
   if(sec.id==="rtu"&&R.d.rtu==="Sim"){h.append(el("span",{class:"n",id:"rtuCount"}));setTimeout(updRtuCount)}
   const card=el("section",{class:"card",id:"s_"+sec.id},h);
   if(sec.custom==="lesions")card.append(renderLesions());
-  else if(sec.custom==="photos")card.append(renderPhotos());
+  else if(sec.custom==="photos")card.append(renderPhotos("ficha"));
+  else if(sec.custom==="endo")card.append(renderPhotos("endo"));
   else{
    const g=el("div",{class:"grid"});
    sec.fields.forEach(f=>{
@@ -408,36 +434,43 @@ function renderLesions(){
   const obs=el("input",{id:`les_${i}_obs`,type:"text"});obs.value=L.obs||"";obs.addEventListener("input",()=>{L.obs=obs.value;changed()});
   list.append(el("div",{class:"lesion"},
    el("div",{class:"head"},"Lesão "+(i+1),el("span",{class:"sp"}),el("button",{type:"button",class:"btn ghost danger",onclick:()=>{R.lesions.splice(i,1);changed(true)}},"Remover")),
-   el("div",{class:"grid"},sel("local",LES_LOCAL,"Localização"),sel("aspecto",LES_ASP,"Aspecto"),num("numero","Número","lesões"),num("tamanho","Maior diâmetro","cm"),sel("base",LES_BASE,"Base"),el("div",{class:"f"},el("label",{for:obs.id},"Observação"),obs)))) });
+   el("div",{class:"grid"},sel("local",LES_LOCAL,"Localização"),sel("aspecto",LES_ASP,"Aspecto"),num("numero","Número","lesões"),num("tamanho","Maior diâmetro","cm"),sel("base",LES_BASE,"Base"),sel("proc",LES_PROC,"Procedimento na lesão"),el("div",{class:"f"},el("span",{class:"lbl"},"Lesão índice"),el("div",{class:"seg"},el("button",{type:"button",class:"chip","aria-pressed":L.indice?"true":"false",onclick:()=>{const on=!L.indice;R.lesions.forEach(x=>delete x.indice);if(on)L.indice=true;changed(true)}},L.indice?"Sim (maior / mais suspeita)":"Marcar como lesão índice"))),el("div",{class:"f w2"},el("label",{for:obs.id},"Observação"),obs)))) });
  box.append(list);return box}
 function short(z){return({"Parede anterior":"ANT","Parede posterior":"POST","Parede lateral direita":"LAT D","Parede lateral esquerda":"LAT E","Cúpula":"CÚPULA","Trígono":"TRÍGONO","Colo vesical":"COLO"})[z]||z}
 
 /* photos */
-function renderPhotos(){
- const d=el("div",{class:"drop",id:"drop"},
-  el("p",{},"Fotografe a ficha preenchida à mão. A imagem é anexada a este laudo e sai nas páginas finais do PDF."),
+let photoKind="ficha";
+const isEndo=p=>p.kind==="endo";
+function renderPhotos(kind){
+ const endo=kind==="endo";
+ const pick=inp=>{photoKind=kind;$(inp).click()};
+ const d=el("div",{class:"drop",id:endo?"dropEndo":"drop"},
+  el("p",{},endo?"Anexe fotos do monitor ou capturas do vídeo. Cada imagem pode ter uma legenda (ex.: lesão papilífera de 1,5 cm, parede lateral direita). Saem no PDF depois do laudo.":"Fotografe a ficha preenchida à mão. A imagem é anexada a este laudo e sai nas páginas finais do PDF."),
   el("div",{class:"quick"},
-   el("button",{type:"button",class:"btn primary",onclick:()=>$("#inCam").click()},camIcon(),"Tirar foto"),
-   el("button",{type:"button",class:"btn",onclick:()=>$("#inGal").click()},"Escolher da galeria / arquivo")));
- if(R.photos.length){const g=el("div",{class:"photos"});R.photos.forEach((p,i)=>{
-   const img=el("img",{src:p.src,alt:"Ficha manual, foto "+(i+1),onclick:()=>{$("#lbImg").src=p.src;$("#lightbox").hidden=false}});
-   g.append(el("div",{class:"ph"},img,el("button",{type:"button",class:"x","aria-label":"Remover foto "+(i+1),onclick:()=>ask("Remover esta foto do laudo?",()=>{R.photos.splice(i,1);changed(true)})},"×"),el("div",{class:"cap"},"Foto "+(i+1)+" · "+Math.round(p.src.length*0.75/1024)+" KB")))});
+   el("button",{type:"button",class:"btn primary",onclick:()=>pick("#inCam")},camIcon(),"Tirar foto"),
+   el("button",{type:"button",class:"btn",onclick:()=>pick("#inGal")},"Escolher da galeria / arquivo")));
+ const mine=R.photos.map((p,i)=>[p,i]).filter(([p])=>endo?isEndo(p):!isEndo(p));
+ if(mine.length){const g=el("div",{class:"photos"});mine.forEach(([p,i],j)=>{
+   const img=el("img",{src:p.src,alt:(endo?"Imagem endoscópica ":"Ficha manual, foto ")+(j+1),onclick:()=>{$("#lbImg").src=p.src;$("#lightbox").hidden=false}});
+   const box=el("div",{class:"ph"},img,el("button",{type:"button",class:"x","aria-label":"Remover foto "+(j+1),onclick:()=>ask("Remover esta foto do laudo?",()=>{R.photos.splice(i,1);changed(true)})},"×"),el("div",{class:"cap"},(endo?"Figura ":"Foto ")+(j+1)+" · "+Math.round(p.src.length*0.75/1024)+" KB"));
+   if(endo){const c=el("input",{type:"text",placeholder:"Legenda","aria-label":"Legenda da figura "+(j+1),style:"border:0;border-top:1px solid var(--line);border-radius:0;min-height:34px;font-size:13px"});c.value=p.legenda||"";c.addEventListener("input",()=>{p.legenda=c.value;changed()});box.append(c)}
+   g.append(box)});
    d.append(g)}
  ["dragover","dragenter"].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add("over")}));
  ["dragleave","drop"].forEach(ev=>d.addEventListener(ev,()=>d.classList.remove("over")));
- d.addEventListener("drop",e=>{e.preventDefault();addFiles(e.dataTransfer.files)});
+ d.addEventListener("drop",e=>{e.preventDefault();photoKind=kind;addFiles(e.dataTransfer.files)});
  return d}
 function camIcon(){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.setAttribute("fill","none");s.setAttribute("stroke","currentColor");s.setAttribute("stroke-width","2");s.innerHTML='<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>';return s}
 async function addFiles(files){
  const arr=[...(files||[])].filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|heic|webp)$/i.test(f.name));
  if(!arr.length){toast("Escolha um arquivo de imagem.");return}
  toast("Processando foto…");
- for(const f of arr){try{R.photos.push({src:await shrink(f),added:Date.now()})}catch(e){toast("Não foi possível ler "+f.name+". Tente uma foto em JPG ou PNG.")}}
+ for(const f of arr){try{R.photos.push({src:await shrink(f),added:Date.now(),kind:photoKind})}catch(e){toast("Não foi possível ler "+f.name+". Tente uma foto em JPG ou PNG.")}}
  changed(true);toast(arr.length>1?arr.length+" fotos anexadas":"Foto anexada")}
 function shrink(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{const M=1800;let w=img.naturalWidth,h=img.naturalHeight;const k=Math.min(1,M/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,w,h);x.drawImage(img,0,0,w,h);URL.revokeObjectURL(url);res(c.toDataURL("image/jpeg",0.82))};img.onerror=()=>{URL.revokeObjectURL(url);rej()};img.src=url})}
 $("#inCam").addEventListener("change",e=>{addFiles(e.target.files);e.target.value=""});
 $("#inGal").addEventListener("change",e=>{addFiles(e.target.files);e.target.value=""});
-$("#btnPhotoTop").addEventListener("click",()=>document.getElementById("s_ficha").scrollIntoView());
+$("#btnPhotoTop").addEventListener("click",()=>{photoKind="ficha";document.getElementById("s_ficha").scrollIntoView()});
 $("#lightbox").addEventListener("click",()=>$("#lightbox").hidden=true);
 
 /* ---------- save ---------- */
@@ -450,29 +483,31 @@ const fmtDate=s=>{if(!s)return"";const[y,m,d]=s.split("-");return d&&m&&y?`${d}/
 /* ---------- text report ---------- */
 function val(f){const v=R.d[f.id];if(Array.isArray(v))return v.join(", ");if(v==null||v==="")return"";if(f.type==="date")return fmtDate(v);return f.suf?dec(v)+" "+f.suf:String(v)}
 const dec=v=>String(v).replace(".",",");
-function lesionText(L,i){const n=parseInt(L.numero||"1",10)||1;let t=(n>1?n+" lesões":"Lesão")+(L.aspecto?" "+L.aspecto.toLowerCase():"");if(L.local)t+=(L.local==="Dentro de divertículo"?" ":/^Junto/.test(L.local)?" ":" em ")+L.local.toLowerCase().replace(/^parede/,"parede");const x=[];if(L.tamanho)x.push((n>1?"a maior com ":"com ")+dec(L.tamanho)+" cm");if(L.base&&L.base!=="Não avaliada")x.push(L.base.toLowerCase());if(L.obs)x.push(L.obs);return t+(x.length?", "+x.join(", "):"")}
+function lesionText(L,i){const n=parseInt(L.numero||"1",10)||1;let t=(n>1?n+" lesões":"Lesão")+(L.aspecto?" "+L.aspecto.toLowerCase():"");if(L.local)t+=(L.local==="Dentro de divertículo"?" ":/^Junto/.test(L.local)?" ":" em ")+L.local.toLowerCase().replace(/^parede/,"parede");const x=[];if(L.tamanho)x.push((n>1?"a maior com ":"com ")+dec(L.tamanho)+" cm");if(L.base&&L.base!=="Não avaliada")x.push(L.base.toLowerCase());if(L.proc&&L.proc!=="Nenhum")x.push(L.proc==="Ressecção (RTU)"?"ressecada":L.proc.toLowerCase()+" realizada");if(L.obs)x.push(L.obs);return t+(x.length?", "+x.join(", "):"")+(L.indice?" (lesão índice)":"")}
 function reportSections(){
  const male=R.d.sexo!=="Feminino";const out=[];
  SECTIONS.forEach(sec=>{
-  if(sec.id==="ident"||sec.id==="ficha")return;
+  if(sec.id==="ident"||sec.id==="ficha"||sec.id==="endo")return;
   const lines=[];
   if(sec.custom==="lesions"){if(R.lesions.length)R.lesions.forEach((L,i)=>lines.push(lesionText(L,i)));else if(R.noLesions)lines.push("Ausência de lesões vegetantes.")}
   else if(sec.id==="meatos"){[["d","Direito"],["e","Esquerdo"]].forEach(([k,n])=>{const v=["pos","forma","efl"].map(x=>R.d["m"+k+"_"+x]).filter(Boolean);if(v.length)lines.push({label:n,text:v.join(", ").toLowerCase().replace(/^./,c=>c.toUpperCase())})})}
   else sec.fields.forEach(f=>{if(f.male&&!male)return;if(f.rtu&&R.d.rtu!=="Sim")return;if(f.id==="rtu"||f.id==="t_tam_cm")return;if(f.id==="t_tam"&&R.d.t_tam_cm){lines.push({label:f.label,text:dec(R.d.t_tam_cm)+" cm"+(R.d.t_tam?" ("+R.d.t_tam+")":"")});return}if(f.show&&!f.show(R.d))return;if(["medico","crm"].includes(f.id))return;const v=val(f);if(!v||v==="Não se aplica")return;if(/_obs$/.test(f.id)||f.id==="conclusao")lines.push({label:f.id==="conclusao"?"Conclusão":f.label,text:v,block:1});else lines.push({label:f.label,text:v})});
-  if(lines.length)out.push({title:sec.id==="prostata"&&!male?"Colo vesical":sec.id==="rtu"?"Checklist RTU de bexiga (MSKCC, Herr e Anderson)":sec.title,lines})});
+  if(lines.length)out.push({title:sec.id==="prostata"&&!male?"Colo vesical":sec.id==="rtu"?"Checklist RTU de bexiga (MSKCC, Herr e Anderson; complementos JSUO)":sec.title,lines})});
  return out}
 function identLines(){const d=R.d,a=[];if(d.nome)a.push(["Paciente",d.nome]);const id=[];if(d.idade)id.push(d.idade+" anos");if(d.sexo)id.push(d.sexo.toLowerCase());if(id.length)a.push(["Idade / sexo",id.join(", ")]);if(d.nasc)a.push(["Nascimento",fmtDate(d.nasc)]);if(d.prontuario)a.push(["Prontuário",d.prontuario]);if(d.convenio)a.push(["Convênio",d.convenio]);if(d.data)a.push(["Data do exame",fmtDate(d.data)]);if(d.local)a.push(["Local",d.local]);if(d.solicitante)a.push(["Solicitante",d.solicitante]);return a}
 function plainText(){
  const t=["LAUDO DE CISTOSCOPIA",""];identLines().forEach(([k,v])=>t.push(k+": "+v));
  reportSections().forEach(s=>{t.push("",s.title.toUpperCase());s.lines.forEach(l=>t.push(typeof l==="string"?"- "+l:(l.label+": "+l.text)))});
- if(R.photos.length)t.push("","Anexo: "+R.photos.length+" foto(s) da ficha manual.");
+ const nE=R.photos.filter(isEndo).length,nF=R.photos.length-nE;
+ if(nE)t.push("","Imagens endoscópicas: "+nE+(nE>1?" figuras":" figura")+".");R.photos.filter(isEndo).forEach((p,j)=>{if(p.legenda)t.push("Figura "+(j+1)+": "+p.legenda)});
+ if(nF)t.push("","Anexo: "+nF+" foto(s) da ficha manual.");
  if(R.d.medico||R.d.crm)t.push("","Dr(a). "+(R.d.medico||"")+(R.d.crm?" · CRM "+R.d.crm:""));
  return t.join("\n")}
 function autoConclusion(){
  const d=R.d,male=d.sexo!=="Feminino",ab=[];
  const isAb=(f)=>{const v=d[f.id];if(!f.normal||v==null||v===""||(Array.isArray(v)&&!v.length))return false;return Array.isArray(f.normal)?!(Array.isArray(v)&&v.every(x=>f.normal.includes(x))):v!==f.normal};
  if(d.ur_ant==="Estenose")ab.push("Estenose de uretra "+(d.est_local?d.est_local.toLowerCase():"anterior")+(d.est_ext?" com cerca de "+d.est_ext+" cm":"")+(d.est_transp==="Não"?", não transposta pelo aparelho":""));
- ALLF.forEach(f=>{if(["ur_ant","md_pos","me_pos","md_forma","me_forma","md_efl","me_efl","intercorr","loja"].includes(f.id))return;if(f.male&&!male)return;if(!isAb(f))return;const v=d[f.id];
+ ALLF.forEach(f=>{if(f.nofill||f.rtu&&d.rtu!=="Sim")return;if(f.show&&!f.show(d))return;if(["ur_ant","md_pos","me_pos","md_forma","me_forma","md_efl","me_efl","intercorr","loja"].includes(f.id))return;if(f.male&&!male)return;if(!isAb(f))return;const v=d[f.id];
   const txt=Array.isArray(v)?f.label+": "+v.join(", ").toLowerCase():f.label+": "+String(v).toLowerCase();ab.push(f.id==="trab"?"Trabeculação vesical "+v.toLowerCase():txt)});
  if(male&&d.loja&&d.loja!=="Não se aplica")ab.push("Loja prostática "+d.loja.toLowerCase());
  [["d","direito"],["e","esquerdo"]].forEach(([s,n])=>{const x=[];["pos","forma","efl"].forEach(k=>{const f=FMAP["m"+s+"_"+k];if(isAb(f))x.push(d[f.id].toLowerCase())});if(x.length)ab.push("Meato ureteral "+n+": "+x.join(", "))});
@@ -481,7 +516,7 @@ function autoConclusion(){
  return ab.map(x=>x.charAt(0).toUpperCase()+x.slice(1)+".").join("\n")+(d.intercorr&&d.intercorr!=="Sem intercorrências"?"\nIntercorrência: "+d.intercorr.toLowerCase()+".":"")}
 
 /* ---------- normal fill ---------- */
-$("#btnNormal").addEventListener("click",()=>{ALLF.forEach(f=>{if(f.normal)R.d[f.id]=Array.isArray(f.normal)?[...f.normal]:f.normal});R.noLesions=true;R.lesions=[];if(!R.d.conclusao)R.d.conclusao="Cistoscopia sem alterações significativas.";changed(true);toast("Achados normais preenchidos. Ajuste o que for diferente.")});
+$("#btnNormal").addEventListener("click",()=>{ALLF.forEach(f=>{if(f.normal&&!f.nofill)R.d[f.id]=Array.isArray(f.normal)?[...f.normal]:f.normal});R.noLesions=true;R.lesions=[];if(!R.d.conclusao)R.d.conclusao="Cistoscopia sem alterações significativas.";changed(true);toast("Achados normais preenchidos. Ajuste o que for diferente.")});
 
 /* ---------- PDF ---------- */
 async function makePdf(){
@@ -504,10 +539,16 @@ async function makePdf(){
    if(typeof l==="string"){const w=doc.splitTextToSize("• "+l,CW-2);ensure(w.length*4.6);doc.setFont("helvetica","normal");doc.text(w,M+1,y);y+=w.length*4.6+.8;return}
    if(l.block){const w=doc.splitTextToSize(l.text,CW);ensure(5+w.length*4.6);doc.setFont("helvetica","bold");doc.text(l.label+":",M,y);y+=4.8;doc.setFont(l.label==="Conclusão"?"helvetica":"helvetica","normal");doc.text(w,M,y);y+=w.length*4.6+1;return}
    doc.setFont("helvetica","bold");const lab=l.label+": ";const full=doc.getTextWidth(lab);if(full>CW*.5){const w=doc.splitTextToSize(l.text,CW-6);ensure(4.8+w.length*4.6);doc.text(lab,M,y);y+=4.8;doc.setFont("helvetica","normal");doc.text(w,M+6,y);y+=w.length*4.6+.8;return}const lw=full;doc.setFont("helvetica","normal");const w=doc.splitTextToSize(l.text,CW-lw);ensure(w.length*4.6);doc.setFont("helvetica","bold");doc.text(lab,M,y);doc.setFont("helvetica","normal");doc.text(w,M+lw,y);y+=w.length*4.6+.8})});
- if(R.photos.length){ensure(8);y+=3;doc.setFontSize(9);doc.setTextColor(90);doc.text("Anexo: "+R.photos.length+" foto(s) da ficha manual nas páginas seguintes.",M,y);y+=4}
+ const endoP=R.photos.filter(isEndo),fichaP=R.photos.filter(p=>!isEndo(p));
+ const notes=[];if(endoP.length)notes.push(endoP.length+" imagem(ns) endoscópica(s)");if(fichaP.length)notes.push(fichaP.length+" foto(s) da ficha manual");
+ if(notes.length){ensure(8);y+=3;doc.setFontSize(9);doc.setTextColor(90);doc.text("Anexos nas páginas seguintes: "+notes.join(" e ")+".",M,y);y+=4}
  ensure(26);y=Math.max(y+16,y);doc.setDrawColor(60);doc.setLineWidth(.3);doc.line(W/2-40,y,W/2+40,y);y+=4.5;doc.setFontSize(10);doc.setTextColor(20);doc.setFont("helvetica","bold");doc.text(R.d.medico?"Dr(a). "+R.d.medico:"Médico executor",W/2,y,{align:"center"});if(R.d.crm){y+=4.5;doc.setFont("helvetica","normal");doc.text("CRM "+R.d.crm,W/2,y,{align:"center"})}
- for(let i=0;i<R.photos.length;i++){const p=R.photos[i];doc.addPage();doc.setFontSize(9);doc.setTextColor(90);doc.setFont("helvetica","normal");doc.text("Anexo "+(i+1)+" · Ficha manual"+(R.d.nome?" · "+R.d.nome:""),M,M);
-  const dim=await new Promise(r=>{const im=new Image();im.onload=()=>r([im.naturalWidth,im.naturalHeight]);im.onerror=()=>r([3,4]);im.src=p.src});
+ const dimOf=src=>new Promise(r=>{const im=new Image();im.onload=()=>r([im.naturalWidth,im.naturalHeight]);im.onerror=()=>r([4,3]);im.src=src});
+ for(let i=0;i<endoP.length;i++){const p=endoP[i];const slot=i%2;if(!slot){doc.addPage();doc.setFontSize(9);doc.setTextColor(90);doc.setFont("helvetica","normal");doc.text("Imagens endoscópicas"+(R.d.nome?" · "+R.d.nome:""),M,M)}
+  const top=M+6+slot*((H-2*M-6)/2),boxH=(H-2*M-6)/2-14;const dim=await dimOf(p.src);const k=Math.min(CW/dim[0],boxH/dim[1]);const w=dim[0]*k,h=dim[1]*k;doc.addImage(p.src,"JPEG",M+(CW-w)/2,top,w,h);
+  doc.setFontSize(9.5);doc.setTextColor(20);const cap=doc.splitTextToSize("Figura "+(i+1)+(p.legenda?" – "+p.legenda:""),CW);doc.text(cap,W/2,top+h+5,{align:"center"})}
+ for(let i=0;i<fichaP.length;i++){const p=fichaP[i];doc.addPage();doc.setFontSize(9);doc.setTextColor(90);doc.setFont("helvetica","normal");doc.text("Anexo "+(i+1)+" · Ficha manual"+(R.d.nome?" · "+R.d.nome:""),M,M);
+  const dim=await dimOf(p.src);
   const maxW=CW,maxH=H-2*M-8;const k=Math.min(maxW/dim[0],maxH/dim[1]);const w=dim[0]*k,h=dim[1]*k;doc.addImage(p.src,"JPEG",M+(maxW-w)/2,M+5,w,h)}
  const pages=doc.getNumberOfPages();for(let i=1;i<=pages;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(140);doc.text("Página "+i+" de "+pages,W-M,H-8,{align:"right"})}
  return doc}
@@ -517,7 +558,7 @@ async function offerFile(filename,data){
   try{await dl.save({filename,data});toast("Arquivo salvo");return true}catch(e){if(e&&e.code!=="declined")toast("Não foi possível salvar o arquivo ("+(e.code||"erro")+").");return false}}
  const blob=data instanceof Blob?data:new Blob([data]);const u=URL.createObjectURL(blob);const a=el("a",{href:u,download:filename});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);return true}
 $("#btnPdf").addEventListener("click",async()=>{toast("Gerando PDF…");const doc=await makePdf();if(!doc){if(!IN_ARTIFACT){printNow();return}toast("Não foi possível carregar o gerador de PDF. Verifique a conexão.");return}await offerFile(fileBase()+".pdf",doc.output("blob"))});
-function printNow(){const pa=$("#printArea");pa.replaceChildren(el("h1",{},"Laudo de Cistoscopia"));identLines().forEach(([k,v])=>pa.append(el("p",{},el("b",{},k+": "),v)));reportSections().forEach(s=>{pa.append(el("h4",{},s.title));s.lines.forEach(l=>pa.append(typeof l==="string"?el("p",{},"• "+l):el("p",{},el("b",{},l.label+": "),l.text)))});if(R.d.medico)pa.append(el("p",{style:"margin-top:28pt;text-align:center"},"_______________________________",el("br"),"Dr(a). "+R.d.medico+(R.d.crm?" · CRM "+R.d.crm:"")));R.photos.forEach(p=>pa.append(el("img",{src:p.src,alt:"Ficha manual"})));window.print()}
+function printNow(){const pa=$("#printArea");pa.replaceChildren(el("h1",{},"Laudo de Cistoscopia"));identLines().forEach(([k,v])=>pa.append(el("p",{},el("b",{},k+": "),v)));reportSections().forEach(s=>{pa.append(el("h4",{},s.title));s.lines.forEach(l=>pa.append(typeof l==="string"?el("p",{},"• "+l):el("p",{},el("b",{},l.label+": "),l.text)))});if(R.d.medico)pa.append(el("p",{style:"margin-top:28pt;text-align:center"},"_______________________________",el("br"),"Dr(a). "+R.d.medico+(R.d.crm?" · CRM "+R.d.crm:"")));R.photos.filter(isEndo).forEach((p,j)=>{pa.append(el("img",{src:p.src,alt:"Imagem endoscópica"}),el("p",{style:"text-align:center"},"Figura "+(j+1)+(p.legenda?" – "+p.legenda:"")))});R.photos.filter(p=>!isEndo(p)).forEach(p=>pa.append(el("img",{src:p.src,alt:"Ficha manual"})));window.print()}
 if(!IN_ARTIFACT){$("#btnPrint").hidden=false;$("#btnPrint").addEventListener("click",printNow)}
 $("#btnCopy").addEventListener("click",()=>{const t=plainText();const fb=()=>{const ta=el("textarea",{style:"position:fixed;top:0;left:0;opacity:0"});ta.value=t;document.body.append(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}ta.remove();toast(ok?"Texto do laudo copiado":"Não foi possível copiar neste aparelho.")};
  try{navigator.clipboard.writeText(t).then(()=>toast("Texto do laudo copiado"),fb)}catch(e){fb()}});
