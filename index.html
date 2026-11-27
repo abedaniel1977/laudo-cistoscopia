@@ -79,6 +79,7 @@ textarea{min-height:76px;resize:vertical}
 .seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--bg)}
 .seg .chip{border:0;border-radius:0;flex:1;text-align:center;border-right:1px solid var(--line);padding:9px 8px}
 .seg .chip:last-child{border-right:0}
+.sexbox{margin-bottom:14px;max-width:420px}
 .seg .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 
 /* lesions */
@@ -392,6 +393,12 @@ function render(){
   else if(sec.custom==="photos")card.append(renderPhotos("ficha"));
   else if(sec.custom==="endo")card.append(renderPhotos("endo"));
   else{
+   if(sec.id==="prostata"){
+    const opts=["Masculino","Feminino"];
+    const box=el("div",{class:"seg",role:"group","aria-label":"Sexo do paciente"});
+    opts.forEach(o=>box.append(el("button",{type:"button",class:"chip","aria-pressed":R.d.sexo===o?"true":"false",onclick:()=>{R.d.sexo=R.d.sexo===o?"":o;changed(true)}},o)));
+    card.append(el("div",{class:"f sexbox"},el("span",{class:"lbl"},"Sexo do paciente"),box,
+     el("span",{class:"note"},male?(R.d.sexo?"Mostrando próstata e colo vesical.":"Sem sexo definido: mostrando próstata e colo vesical."):"Feminino: só colo vesical; campos de próstata saem do laudo.")))}
    const g=el("div",{class:"grid"});
    sec.fields.forEach(f=>{
     if(f.male&&!male)return;
